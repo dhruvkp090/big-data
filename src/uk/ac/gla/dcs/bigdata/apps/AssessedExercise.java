@@ -10,9 +10,12 @@ import org.apache.spark.sql.SparkSession;
 
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
+import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokeniserMap;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenisedNewsArticle;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -98,7 +101,15 @@ public class AssessedExercise {
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
-		
+		List<NewsArticle> check = news.collectAsList();
+		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
+		List<ContentItem> con = contents.collectAsList();
+		for(ContentItem c: con) {
+			System.out.println(c.getContent());
+		}
+//		Dataset<TokenisedNewsArticle> tokenNews = news.map(new NewsTokeniserMap(spark), Encoders.bean(TokenisedNewsArticle.class));
+
+//		tokenNews.count();
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
