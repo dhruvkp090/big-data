@@ -127,13 +127,14 @@ public class AssessedExercise {
 //		for(ContentItem c: con) {
 //			System.out.println(c.getContent());
 //		}
-		Dataset<TokenizedNewsArticle> tokenNews = news.limit(10).map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 
+		Dataset<TokenizedNewsArticle> tokenNews = news.map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 
 		List<TokenizedNewsArticle> con = tokenNews.collectAsList();
-		for(TokenizedNewsArticle c: con) {
-			System.out.println(c.getLength());
-		}
+//		for(TokenizedNewsArticle c: con) {
+//			System.out.println(c.getLength());
+//		}
+
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
