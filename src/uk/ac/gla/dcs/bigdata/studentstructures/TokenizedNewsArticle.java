@@ -9,6 +9,13 @@ public class TokenisedNewsArticle {
     int length;
     HashMap<String, Integer> frequency;
 
+    public TokenisedNewsArticle() {
+        this.id = null;
+        this.title = null;
+        this.length = 0;
+        this.frequency = null;
+    }
+
     public TokenisedNewsArticle(String id, List<String> title, int length, HashMap<String, Integer> frequency) {
         this.id = id;
         this.title = title;
