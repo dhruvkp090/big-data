@@ -115,7 +115,7 @@ public class AssessedExercise {
 //			System.out.println(a.getSubtype());
 //			System.out.println(a.getType());
 //		}
-		
+
 		
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
