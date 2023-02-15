@@ -10,12 +10,11 @@ import org.apache.spark.sql.SparkSession;
 
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
-import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokeniserMap;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenisedNewsArticle;
+import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -101,15 +100,18 @@ public class AssessedExercise {
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
-		List<NewsArticle> check = news.collectAsList();
-		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
-		List<ContentItem> con = contents.collectAsList();
-		for(ContentItem c: con) {
-			System.out.println(c.getContent());
-		}
-//		Dataset<TokenisedNewsArticle> tokenNews = news.map(new NewsTokeniserMap(spark), Encoders.bean(TokenisedNewsArticle.class));
+//		List<NewsArticle> check = news.collectAsList();
+//		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
+//		List<ContentItem> con = contents.collectAsList();
+//		for(ContentItem c: con) {
+//			System.out.println(c.getContent());
+//		}
+		Dataset<TokenizedNewsArticle> tokenNews = news.map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 
-//		tokenNews.count();
+		List<TokenizedNewsArticle> con = tokenNews.collectAsList();
+//		for(TokenizedNewsArticle c: con) {
+//			System.out.println(c.getLength());
+//		}
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
