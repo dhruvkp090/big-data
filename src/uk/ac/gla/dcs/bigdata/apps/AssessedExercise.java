@@ -1,6 +1,8 @@
 package uk.ac.gla.dcs.bigdata.apps;
 
 import java.io.File;
+
+import java.util.*;
 import java.util.List;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.Dataset;
@@ -10,6 +12,7 @@ import org.apache.spark.sql.SparkSession;
 
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
+import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
@@ -94,6 +97,18 @@ public class AssessedExercise {
 		// Perform an initial conversion from Dataset<Row> to Query and NewsArticle Java objects
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
+		
+		List<Query> steamGamesList = queries.collectAsList();
+		System.out.print(steamGamesList.get(1).getOriginalQuery());
+		
+		List<NewsArticle> steamGamesList1 = news.collectAsList();
+//		NewsArticle a[] = steamGamesList1.get(1).getContents();
+		for(ContentItem a: steamGamesList1.get(1).getContents()) {
+			System.out.println(a.getContent());
+			System.out.println(a.getSubtype());
+			System.out.println(a.getType());
+		}
+		
 		
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
