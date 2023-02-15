@@ -1,6 +1,8 @@
 package uk.ac.gla.dcs.bigdata.apps;
 
 import java.io.File;
+
+import java.util.*;
 import java.util.List;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.Dataset;
@@ -13,6 +15,7 @@ import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
@@ -95,23 +98,29 @@ public class AssessedExercise {
 		
 		// Perform an initial conversion from Dataset<Row> to Query and NewsArticle Java objects
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
+		
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
+		
+		//2 filters are applied here, 1. filters out all news articles without title, 2. calls custom filter function.
+		Dataset<NewsArticle> filteredNews = news.filter(news.col("title").isNotNull()).filter(new NewsArticleFilter());
+
+		System.out.println(news.count());
+		System.out.println(filteredNews.count());
+//		filteredNews.printSchema();
+
 		
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
-//		List<NewsArticle> check = news.collectAsList();
-//		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
-//		List<ContentItem> con = contents.collectAsList();
-//		for(ContentItem c: con) {
-//			System.out.println(c.getContent());
-//		}
-		Dataset<TokenizedNewsArticle> tokenNews = news.map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 
+
+		Dataset<TokenizedNewsArticle> tokenNews = filteredNews.map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
+//
 		List<TokenizedNewsArticle> con = tokenNews.collectAsList();
 //		for(TokenizedNewsArticle c: con) {
 //			System.out.println(c.getLength());
 //		}
+
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
