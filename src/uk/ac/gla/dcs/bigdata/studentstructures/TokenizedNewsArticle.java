@@ -2,21 +2,22 @@ package uk.ac.gla.dcs.bigdata.studentstructures;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class TokenisedNewsArticle {
+public class TokenizedNewsArticle {
     String id;
     List<String> title;
     int length;
-    HashMap<String, Integer> frequency;
+    Map<String, Integer> frequency;
 
-    public TokenisedNewsArticle() {
+    public TokenizedNewsArticle() {
         this.id = null;
         this.title = null;
         this.length = 0;
         this.frequency = null;
     }
 
-    public TokenisedNewsArticle(String id, List<String> title, int length, HashMap<String, Integer> frequency) {
+    public TokenizedNewsArticle(String id, List<String> title, int length, HashMap<String, Integer> frequency) {
         this.id = id;
         this.title = title;
         this.length = length;
@@ -47,11 +48,11 @@ public class TokenisedNewsArticle {
         this.length = length;
     }
 
-    public HashMap<String, Integer> getFrequency() {
+    public Map<String, Integer> getFrequency() {
         return frequency;
     }
 
-    public void setFrequency(HashMap<String, Integer> frequency) {
+    public void setFrequency(Map<String, Integer> frequency) {
         this.frequency = frequency;
     }
 }

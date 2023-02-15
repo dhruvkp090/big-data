@@ -12,12 +12,11 @@ import org.apache.spark.sql.SparkSession;
 
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
-import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokeniserMap;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenisedNewsArticle;
+import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -100,8 +99,9 @@ public class AssessedExercise {
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
-//		Dataset<NewsArticle> filteredNews = news.where(col("title")));
-//		System.out.println(filteredNews.count());
+		Dataset<NewsArticle> filteredNews = news.filter(news.col("title").isNotNull());
+		System.out.println(news.count());
+		System.out.println(filteredNews.count());
 //		filteredNews.printSchema();
 		
 		
@@ -121,9 +121,19 @@ public class AssessedExercise {
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
 
-//		Dataset<TokenisedNewsArticle> tokenNews = news.map(new NewsTokeniserMap(spark), Encoders.bean(TokenisedNewsArticle.class));
+//		List<NewsArticle> check = news.collectAsList();
+//		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
+//		List<ContentItem> con = contents.collectAsList();
+//		for(ContentItem c: con) {
+//			System.out.println(c.getContent());
+//		}
+		Dataset<TokenizedNewsArticle> tokenNews = news.limit(10).map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 
-//		tokenNews.count();
+
+		List<TokenizedNewsArticle> con = tokenNews.collectAsList();
+		for(TokenizedNewsArticle c: con) {
+			System.out.println(c.getLength());
+		}
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
