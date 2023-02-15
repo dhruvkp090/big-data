@@ -1,5 +1,6 @@
 package uk.ac.gla.dcs.bigdata.providedutilities;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
