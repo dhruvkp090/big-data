@@ -16,6 +16,8 @@ import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokeniserMap;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenisedNewsArticle;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -96,24 +98,37 @@ public class AssessedExercise {
 		
 		// Perform an initial conversion from Dataset<Row> to Query and NewsArticle Java objects
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
+		
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
+		Dataset<NewsArticle> filteredNews = news.where(col("title")));
+		System.out.println(filteredNews.count());
+		filteredNews.printSchema();
 		
-		List<Query> steamGamesList = queries.collectAsList();
-		System.out.print(steamGamesList.get(1).getOriginalQuery());
 		
-		List<NewsArticle> steamGamesList1 = news.collectAsList();
-//		NewsArticle a[] = steamGamesList1.get(1).getContents();
-		for(ContentItem a: steamGamesList1.get(1).getContents()) {
-			System.out.println(a.getContent());
-			System.out.println(a.getSubtype());
-			System.out.println(a.getType());
-		}
+//		List<Query> steamGamesList = queries.collectAsList();
+//		System.out.print(steamGamesList.get(1).getOriginalQuery());
+//		
+//		List<NewsArticle> steamGamesList1 = news.collectAsList();
+////		NewsArticle a[] = steamGamesList1.get(1).getContents();
+//		for(ContentItem a: steamGamesList1.get(1).getContents()) {
+//			System.out.println(a.getContent());
+//			System.out.println(a.getSubtype());
+//			System.out.println(a.getType());
+//		}
 		
 		
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
-		
+//		List<NewsArticle> check = news.collectAsList();
+//		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
+//		List<ContentItem> con = contents.collectAsList();
+//		for(ContentItem c: con) {
+//			System.out.println(c.getContent());
+//		}
+//		Dataset<TokenisedNewsArticle> tokenNews = news.map(new NewsTokeniserMap(spark), Encoders.bean(TokenisedNewsArticle.class));
+
+//		tokenNews.count();
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
