@@ -6,7 +6,10 @@ import org.apache.spark.api.java.function.FilterFunction;
 
 import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
-
+/**
+ * Filters out all news articles that have less than 5 paragraphs
+ *
+ */
 public class NewsArticleFilter implements FilterFunction<NewsArticle> {
 
 	private static final long serialVersionUID = 1L;

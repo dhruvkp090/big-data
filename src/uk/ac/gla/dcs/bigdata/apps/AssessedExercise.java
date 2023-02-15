@@ -100,6 +100,8 @@ public class AssessedExercise {
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
+		
+		//2 filters are applied here, 1. filters out all news articles without title, 2. calls custom filter function.
 		Dataset<NewsArticle> filteredNews = news.filter(news.col("title").isNotNull()).filter(new NewsArticleFilter());
 
 		System.out.println(news.count());
