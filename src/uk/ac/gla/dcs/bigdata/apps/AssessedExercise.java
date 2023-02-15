@@ -100,9 +100,9 @@ public class AssessedExercise {
 		Dataset<Query> queries = queriesjson.map(new QueryFormaterMap(), Encoders.bean(Query.class)); // this converts each row into a Query
 		
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
-		Dataset<NewsArticle> filteredNews = news.where(col("title")));
-		System.out.println(filteredNews.count());
-		filteredNews.printSchema();
+//		Dataset<NewsArticle> filteredNews = news.where(col("title")));
+//		System.out.println(filteredNews.count());
+//		filteredNews.printSchema();
 		
 		
 //		List<Query> steamGamesList = queries.collectAsList();
@@ -120,12 +120,7 @@ public class AssessedExercise {
 		//----------------------------------------------------------------
 		// Your Spark Topology should be defined here
 		//----------------------------------------------------------------
-//		List<NewsArticle> check = news.collectAsList();
-//		Dataset<ContentItem> contents = spark.createDataset(check.get(0).getContents(), Encoders.bean(ContentItem.class));
-//		List<ContentItem> con = contents.collectAsList();
-//		for(ContentItem c: con) {
-//			System.out.println(c.getContent());
-//		}
+
 //		Dataset<TokenisedNewsArticle> tokenNews = news.map(new NewsTokeniserMap(spark), Encoders.bean(TokenisedNewsArticle.class));
 
 //		tokenNews.count();
