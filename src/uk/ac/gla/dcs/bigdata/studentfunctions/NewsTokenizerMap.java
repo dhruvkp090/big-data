@@ -1,18 +1,21 @@
 package uk.ac.gla.dcs.bigdata.studentfunctions;
 
+
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.SparkSession;
 import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedutilities.TextPreProcessor;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsArticle> {
 
-    private SparkSession spark;
+    private static final long serialVersionUID = 1L;
+	private SparkSession spark;
 
 
     public NewsTokenizerMap(SparkSession spark) {
@@ -38,7 +41,7 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
                 break;
             }
         }
-        System.out.println(count);
+
         List<String> docTerms = tokenize.process(firstFivePara); // Tokenize Docterms
 
         HashMap<String, Integer> frequency = new HashMap<>();
@@ -52,12 +55,15 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
                 frequency.put(token, 1);
             }
         }
+        
+        TokenFrequency frequency_object = new TokenFrequency(frequency);
+        
 
         return new TokenizedNewsArticle(
                 news.getId(),
                 tokenizedTitle,
                 docTerms.size(),
-                frequency
+                frequency_object
                 );
     }
 
