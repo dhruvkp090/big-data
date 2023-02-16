@@ -2,17 +2,20 @@ package uk.ac.gla.dcs.bigdata.providedstructures;
 
 import java.io.Serializable;
 
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
+
 public class RankedResult implements Serializable, Comparable<RankedResult> {
 
 	private static final long serialVersionUID = -2905684103776472843L;
 	
 	String docid;
-	NewsArticle article;
+//	NewsArticle article;
+	TokenizedNewsArticle article;
 	double score;
 	
 	public RankedResult() {}
 	
-	public RankedResult(String docid, NewsArticle article, double score) {
+	public RankedResult(String docid, TokenizedNewsArticle article, double score) {
 		super();
 		this.docid = docid;
 		this.article = article;
@@ -27,11 +30,11 @@ public class RankedResult implements Serializable, Comparable<RankedResult> {
 		this.docid = docid;
 	}
 
-	public NewsArticle getArticle() {
+	public TokenizedNewsArticle getArticle() {
 		return article;
 	}
 
-	public void setArticle(NewsArticle article) {
+	public void setArticle(TokenizedNewsArticle article) {
 		this.article = article;
 	}
 

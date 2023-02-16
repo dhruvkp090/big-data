@@ -1,19 +1,19 @@
 package uk.ac.gla.dcs.bigdata.studentstructures;
-import java.util.HashMap;
 
+//This is the class representing the information about the corpus
 public class CorpusSummary {
-	int totalDocuments; //the total number of documents in the corpus
+	long totalDocuments; //the total number of documents in the corpus
 	float averageDocumentLength; //the average length of the corpus
-	HashMap<String, Integer> queryTermsFrequency; //the sum of term frequencies for the set of all the terms in queries across all documents
+	TokenFrequency<Integer> queryTermsFrequency; //the sum of term frequencies for the set of all the terms in queries across all documents
 	
-	public CorpusSummary(int totalDocuments, float averageDocumentLength,HashMap<String, Integer> queryTermsFrequency) {
+	public CorpusSummary(int totalDocuments, float averageDocumentLength,TokenFrequency<Integer> queryTermsFrequency) {
 		this.totalDocuments = totalDocuments;
 		this.averageDocumentLength = averageDocumentLength;
 		this.queryTermsFrequency = queryTermsFrequency;
 		
 	}
 	
-	public int getTotalDocuments(){
+	public long getTotalDocuments(){
 		return totalDocuments;
 	}
 	
@@ -21,7 +21,7 @@ public class CorpusSummary {
 		return averageDocumentLength;
 	}
 	
-	public HashMap<String, Integer> getQueryTermsFrequency(){
+	public TokenFrequency<Integer> getQueryTermsFrequency(){
 		return queryTermsFrequency;
 	}
 	
@@ -33,7 +33,7 @@ public class CorpusSummary {
 		this.averageDocumentLength = averageDocumentLength;
 	}
 	
-	public void setQueryTermsFrequency(HashMap<String, Integer> queryTermsFrequency){
+	public void setQueryTermsFrequency(TokenFrequency<Integer> queryTermsFrequency){
 		this.queryTermsFrequency = queryTermsFrequency;
 	}
 	

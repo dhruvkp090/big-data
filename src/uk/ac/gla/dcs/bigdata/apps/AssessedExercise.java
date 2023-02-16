@@ -19,8 +19,10 @@ import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
+import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**
@@ -136,19 +138,17 @@ public class AssessedExercise {
 		// Calculate the average
 		float AvgDocLength =  DocLengthSum/DocCount;
 		
-		System.out.println(AvgDocLength);
+		// Extract the token frequencies of the documents by performing a map from TokenizedNewsArticle to a TokenFrequency object
+		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(), Encoders.bean(TokenFrequency.class));
+		//Merge the token frequencies to get sum of term frequencies for the term across all documents in a parallel manner 
+		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
 		
-		//below to commented code lines to calculate the map of all token frequences, encoder should be corrected
-		// Dataset<Map<String,Integer>> tokenFrequencies = tokenNews.map(new DocumentLengthMap(), Encoders.());
-		// Map<String,Integer> allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
+		//Create a CorpusSummary object which contains total number of documents, average document length and total token frequecies
+		CorpusSummary detailsDataset = new CorpusSummary(DocCount, AvgDocLength, allTokenFrequencies); 
 		
-		CorpusSummary detailsDataset = new CorpusSummary(DocCount, AvgDocLength, null); 
-		
-		
-		
-		
-		
-		
+		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
+		System.out.println(detailsDataset.getAverageDocumentLength());
+		System.out.println(detailsDataset.getTotalDocuments());
 		
 		
 		
