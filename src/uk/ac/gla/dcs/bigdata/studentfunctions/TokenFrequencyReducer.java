@@ -1,5 +1,6 @@
 package uk.ac.gla.dcs.bigdata.studentfunctions;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -7,18 +8,22 @@ import java.util.stream.Stream;
 
 import org.apache.spark.api.java.function.ReduceFunction;
 
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
+
 /**
  * This merges two hashmaps of token frequency pairs, this is processed recursively for the whole dataset
  * to get sum of term frequencies for the term across all documents
  */
 
-public class TokenFrequencyReducer implements ReduceFunction<Map<String,Integer>> {
+public class TokenFrequencyReducer implements ReduceFunction<TokenFrequency> {
 	
 	private static final long serialVersionUID = 24L;
 	
 	@Override
-	public Map<String,Integer> call(Map<String,Integer>  m1, Map<String,Integer> m2) throws Exception {
-		var v = Stream.of(m1, m2)
+	public TokenFrequency call(TokenFrequency  tf1, TokenFrequency tf2) throws Exception {
+		Map<String, Integer> m1 = tf1.getFrequency();
+		Map<String, Integer> m2 = tf2.getFrequency();
+		var m = Stream.of(m1, m2)
 			    .map(Map::entrySet)
 			    .flatMap(Set::stream)
 			    .collect(
@@ -28,7 +33,9 @@ public class TokenFrequencyReducer implements ReduceFunction<Map<String,Integer>
 			            Integer::sum         // merge function
 			        )
 			    );
-		return v;
+		HashMap<String, Integer> hm = (HashMap<String, Integer>)m;
+		TokenFrequency tf_all = new TokenFrequency(hm);
+		return tf_all;
 	}
 	
 
