@@ -5,6 +5,8 @@ import java.io.File;
 import java.util.*;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
@@ -15,12 +17,8 @@ import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
-import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
+import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
+import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
@@ -108,7 +106,7 @@ public class AssessedExercise {
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this converts each row into a NewsArticle
 		
 		//2 filters are applied here, 1. filters out all news articles without title, 2. calls custom filter function.
-		Dataset<NewsArticle> filteredNews = news.filter(news.col("title").isNotNull()).filter(new NewsArticleFilter());
+		Dataset<NewsArticle> filteredNews = news.limit(2).filter(news.col("title").isNotNull()).filter(new NewsArticleFilter());
 
 		// System.out.println(news.count());
 		// System.out.println(filteredNews.count());
@@ -122,10 +120,10 @@ public class AssessedExercise {
 
 		Dataset<TokenizedNewsArticle> tokenNews = filteredNews.map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 //
-		List<TokenizedNewsArticle> tokenNewsAll = tokenNews.collectAsList();
-		for(TokenizedNewsArticle c: tokenNewsAll) {
-			System.out.println(c.getFrequency());
-		}
+//		List<TokenizedNewsArticle> tokenNewsAll = tokenNews.collectAsList();
+//		for(TokenizedNewsArticle c: tokenNewsAll) {
+//			System.out.println(c.getFrequency());
+//		}
 		
 		
 		// Extract the lengths of the documents by performing a map from TokenizedNewsArticle to an integer (the length)
@@ -144,8 +142,18 @@ public class AssessedExercise {
 		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
 		
 		//Create a CorpusSummary object which contains total number of documents, average document length and total token frequecies
-		CorpusSummary detailsDataset = new CorpusSummary(DocCount, AvgDocLength, allTokenFrequencies); 
-		
+		CorpusSummary detailsDataset = new CorpusSummary(DocCount, AvgDocLength, allTokenFrequencies);
+
+		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext()).broadcast(detailsDataset);
+
+		List<DocumentRanking> rankedQueries = new ArrayList<>();
+
+		List<Query> queryList = queries.collectAsList();
+		for (Query q: queryList) {
+			Dataset<RankedResult> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(RankedResult.class));
+			rankedQueries.add(new DocumentRanking(q, rankedDocuments.collectAsList()));
+		}
+
 		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
 		System.out.println(detailsDataset.getAverageDocumentLength());
 		System.out.println(detailsDataset.getTotalDocuments());

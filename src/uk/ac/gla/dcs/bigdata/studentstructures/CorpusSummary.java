@@ -1,7 +1,9 @@
 package uk.ac.gla.dcs.bigdata.studentstructures;
 
+import java.io.Serializable;
+
 //This is the class representing the information about the corpus
-public class CorpusSummary {
+public class CorpusSummary implements Serializable {
 	long totalDocuments; //the total number of documents in the corpus
 	float averageDocumentLength; //the average length of the corpus
 	TokenFrequency<Integer> queryTermsFrequency; //the sum of term frequencies for the set of all the terms in queries across all documents
