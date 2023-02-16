@@ -3,7 +3,7 @@ package uk.ac.gla.dcs.bigdata.apps;
 import java.io.File;
 
 import java.util.*;
-import java.util.List;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -15,8 +15,12 @@ import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
+import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
+import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
+import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**
@@ -104,8 +108,8 @@ public class AssessedExercise {
 		//2 filters are applied here, 1. filters out all news articles without title, 2. calls custom filter function.
 		Dataset<NewsArticle> filteredNews = news.filter(news.col("title").isNotNull()).filter(new NewsArticleFilter());
 
-		System.out.println(news.count());
-		System.out.println(filteredNews.count());
+		// System.out.println(news.count());
+		// System.out.println(filteredNews.count());
 //		filteredNews.printSchema();
 
 		
@@ -116,11 +120,37 @@ public class AssessedExercise {
 
 		Dataset<TokenizedNewsArticle> tokenNews = filteredNews.map(new NewsTokenizerMap(spark), Encoders.bean(TokenizedNewsArticle.class));
 //
-		List<TokenizedNewsArticle> con = tokenNews.collectAsList();
-//		for(TokenizedNewsArticle c: con) {
-//			System.out.println(c.getLength());
-//		}
-
+		List<TokenizedNewsArticle> tokenNewsAll = tokenNews.collectAsList();
+		for(TokenizedNewsArticle c: tokenNewsAll) {
+			System.out.println(c.getFrequency());
+		}
+		
+		
+		// Extract the lengths of the documents by performing a map from TokenizedNewsArticle to an integer (the length)
+		Dataset<Integer> documentLengths = tokenNews.map(new DocumentLengthMap(), Encoders.INT());
+		// Sum the documents' lengths in a parallel manner 
+		// This will trigger processing up to this point 
+		Integer DocLengthSum = documentLengths.reduce(new DocumentLengthReducer());
+		// Calculate the number of documents to calculate the average
+		int DocCount = (int) tokenNews.count();
+		// Calculate the average
+		float AvgDocLength =  DocLengthSum/DocCount;
+		
+		System.out.println(AvgDocLength);
+		
+		//below to commented code lines to calculate the map of all token frequences, encoder should be corrected
+		// Dataset<Map<String,Integer>> tokenFrequencies = tokenNews.map(new DocumentLengthMap(), Encoders.());
+		// Map<String,Integer> allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
+		
+		CorpusSummary detailsDataset = new CorpusSummary(DocCount, AvgDocLength, null); 
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
