@@ -158,6 +158,11 @@ public class AssessedExercise {
 		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
 		System.out.println(detailsDataset.getAverageDocumentLength());
 		System.out.println(detailsDataset.getTotalDocuments());
+		System.out.println(rankedQueries.get(0).getQuery().getOriginalQuery());
+		for(RankedResult r:rankedQueries.get(0).getResults() ) {
+			System.out.println(r.getDocid()+" - "+ r.getScore());
+			
+		}
 		
 		
 		

@@ -59,10 +59,10 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
         
 
         return new TokenizedNewsArticle(
-                news.getId(),
                 tokenizedTitle,
                 docTerms.size(),
-                frequency_object
+                frequency_object,
+                news
                 );
     }
 
