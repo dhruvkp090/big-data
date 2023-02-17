@@ -32,16 +32,16 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, RankedResult
 		int totalfreq = 1;
 		for(String term: query.getQueryTerms()) {
 			if(value.getFrequency().getFrequency().get(term) != null) {
-				tf = value.getFrequency().getFrequency().get(term);
+				tf = value.getFrequency().getFrequency().get(term).shortValue();
 				}
 			if(corpus.value().getQueryTermsFrequency().getFrequency().get(term) !=null) {
 				totalfreq = corpus.value().getQueryTermsFrequency().getFrequency().get(term);
 			}
-			double score1 = DPHScorer.getDPHScore(tf, totalfreq, len, avglen, docs);
+			double score1 = DPHScorer.getDPHScore((short)(tf+1), totalfreq+1, len, avglen, docs);
 			score += score1;
 		}
 		
-		return new RankedResult(value.getId(), value, score);
+		return new RankedResult(value.getArticle().getId(), value.getArticle(), score);
 	}
 
 }

@@ -9,13 +9,12 @@ public class RankedResult implements Serializable, Comparable<RankedResult> {
 	private static final long serialVersionUID = -2905684103776472843L;
 	
 	String docid;
-//	NewsArticle article;
-	TokenizedNewsArticle article;
+	NewsArticle article;
 	double score;
 	
 	public RankedResult() {}
 	
-	public RankedResult(String docid, TokenizedNewsArticle article, double score) {
+	public RankedResult(String docid, NewsArticle article, double score) {
 		super();
 		this.docid = docid;
 		this.article = article;
@@ -30,11 +29,11 @@ public class RankedResult implements Serializable, Comparable<RankedResult> {
 		this.docid = docid;
 	}
 
-	public TokenizedNewsArticle getArticle() {
+	public NewsArticle getArticle() {
 		return article;
 	}
 
-	public void setArticle(TokenizedNewsArticle article) {
+	public void setArticle(NewsArticle article) {
 		this.article = article;
 	}
 

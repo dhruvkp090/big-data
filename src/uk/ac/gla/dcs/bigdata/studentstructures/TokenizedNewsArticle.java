@@ -2,40 +2,41 @@ package uk.ac.gla.dcs.bigdata.studentstructures;
 
 import java.util.List;
 
+import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
+
 public class TokenizedNewsArticle {
-    String id;
-    List<String> title;
+    List<String> tokenizedTitle;
     int length;
-    TokenFrequency<Short> frequency;
+    TokenFrequency frequency;
+    NewsArticle article;
 
     public TokenizedNewsArticle() {
-        this.id = null;
-        this.title = null;
         this.length = 0;
         this.frequency = null;
+        this.article = null;
     }
 
-    public TokenizedNewsArticle(String id, List<String> title, int length, TokenFrequency<Short> frequency) {
-        this.id = id;
-        this.title = title;
+    public TokenizedNewsArticle(List<String> title, int length, TokenFrequency frequency, NewsArticle article) {
+        this.tokenizedTitle = title;
         this.length = length;
         this.frequency = frequency;
+        this.article = article;
     }
 
-    public String getId() {
-        return id;
+    public NewsArticle getArticle() {
+        return article;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setArticle(NewsArticle article) {
+        this.article = article;
     }
 
     public List<String> getTitle() {
-        return title;
+        return tokenizedTitle;
     }
 
     public void setTitle(List<String> title) {
-        this.title = title;
+        this.tokenizedTitle = title;
     }
 
     public int getLength() {
@@ -46,11 +47,11 @@ public class TokenizedNewsArticle {
         this.length = length;
     }
 
-    public TokenFrequency<Short> getFrequency() {
+    public TokenFrequency getFrequency() {
         return frequency;
     }
 
-    public void setFrequency(TokenFrequency<Short> frequency) {
+    public void setFrequency(TokenFrequency frequency) {
         this.frequency = frequency;
     }
 }
