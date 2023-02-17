@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
@@ -153,10 +154,19 @@ public class AssessedExercise {
 			Dataset<RankedResult> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(RankedResult.class));
 			rankedQueries.add(new DocumentRanking(q, rankedDocuments.collectAsList()));
 		}
+		
+		for (DocumentRanking dr : rankedQueries) {
+			List<RankedResult> results = dr.getResults();
+			Dataset<RankedResult> queryResults = spark.createDataset(results, Encoders.bean(RankedResult.class));
+			RankedResultToScore keyFunction = new RankedResultToScore();
+			KeyValueGroupedDataset<Double,RankedResult> queryResultsByScore = queryResults.groupByKey(keyFunction, Encoders.DOUBLE());
+			//KeyValueGroupedDataset<Double,RankedResult> queryResultsByScoreSorted =  queryResultsByScore.sortByKey(new ScoreComparator(), true);
+			
+		}
 
-		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
-		System.out.println(detailsDataset.getAverageDocumentLength());
-		System.out.println(detailsDataset.getTotalDocuments());
+//		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
+//		System.out.println(detailsDataset.getAverageDocumentLength());
+//		System.out.println(detailsDataset.getTotalDocuments());
 		
 		
 		
