@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
@@ -31,6 +32,8 @@ import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
+
+import static org.apache.spark.sql.functions.desc;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -129,7 +132,7 @@ public class AssessedExercise {
 
 		// 2 filters are applied here, 1. filters out all news articles without title,
 		// 2. calls custom filter function.
-		Dataset<NewsArticle> filteredNews = news.limit(2).filter(news.col("title").isNotNull())
+		Dataset<NewsArticle> filteredNews = news.limit(10).filter(news.col("title").isNotNull())
 				.filter(new NewsArticleFilter());
 
 		// System.out.println(news.count());
@@ -183,14 +186,25 @@ public class AssessedExercise {
 			rankedQueries.add(new DocumentRanking(q, rankedDocuments.collectAsList()));
 		}
 
-		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
-		System.out.println(detailsDataset.getAverageDocumentLength());
-		System.out.println(detailsDataset.getTotalDocuments());
-		System.out.println(rankedQueries.get(0).getQuery().getOriginalQuery());
-		for (RankedResult r : rankedQueries.get(0).getResults()) {
-			System.out.println(r.getDocid() + " - " + r.getScore());
+		for (DocumentRanking dr : rankedQueries) {
+			List<RankedResult> results = dr.getResults();
+			Dataset<RankedResult> queryResults = spark.createDataset(results, Encoders.bean(RankedResult.class));
+			Dataset<RankedResult> sorted = queryResults.sort(desc("score"));
+			List<RankedResult> sortedList = sorted.collectAsList();
+			for (RankedResult r : sortedList) {
+				System.out.println(r.getArticle().getTitle() + " -- " + r.getDocid() + " -- " + r.getArticle().getId() + " - " + r.getScore());
 
+			}
 		}
+
+//		System.out.println(detailsDataset.getQueryTermsFrequency().getFrequency());
+//		System.out.println(detailsDataset.getAverageDocumentLength());
+//		System.out.println(detailsDataset.getTotalDocuments());
+//		System.out.println(rankedQueries.get(0).getQuery().getOriginalQuery());
+//		for (RankedResult r : rankedQueries.get(0).getResults()) {
+//			System.out.println(r.getDocid() + " - " + r.getScore());
+//
+//		}
 
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}

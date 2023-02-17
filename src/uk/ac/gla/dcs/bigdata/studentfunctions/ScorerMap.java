@@ -28,9 +28,9 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, RankedResult
 		double avglen = corpus.value().getAverageDocumentLength();
 		long docs = corpus.value().getTotalDocuments();
 		double score = 0;
-		short tf = 1;
-		int totalfreq = 1;
 		for(String term: query.getQueryTerms()) {
+			short tf = 1;
+			int totalfreq = 1;
 			if(value.getFrequency().getFrequency().get(term) != null) {
 				tf = value.getFrequency().getFrequency().get(term).shortValue();
 				}
