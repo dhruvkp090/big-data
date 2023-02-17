@@ -24,12 +24,12 @@ public class TokenizedNewsArticle {
     }
 
     public NewsArticle getArticle() {
-		return article;
-	}
+        return article;
+    }
 
-	public void setArticle(NewsArticle article) {
-		this.article = article;
-	}
+    public void setArticle(NewsArticle article) {
+        this.article = article;
+    }
 
     public List<String> getTitle() {
         return tokenizedTitle;
