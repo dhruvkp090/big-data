@@ -2,6 +2,8 @@ package uk.ac.gla.dcs.bigdata.providedstructures;
 
 import java.io.Serializable;
 
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
+
 public class RankedResult implements Serializable, Comparable<RankedResult> {
 
 	private static final long serialVersionUID = -2905684103776472843L;
