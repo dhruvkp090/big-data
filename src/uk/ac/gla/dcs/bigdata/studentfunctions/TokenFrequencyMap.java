@@ -4,6 +4,7 @@ package uk.ac.gla.dcs.bigdata.studentfunctions;
 
 import org.apache.spark.api.java.function.MapFunction;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequencyShort;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**

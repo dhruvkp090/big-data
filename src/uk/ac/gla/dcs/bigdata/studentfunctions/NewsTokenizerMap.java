@@ -43,12 +43,12 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
         }
         List<String> docTerms = tokenize.process(firstFivePara); // Tokenize Docterms
 
-        HashMap<String, Integer> frequency = new HashMap<>();
+        HashMap<String,Integer> frequency = new HashMap<>();
 
         // Doc Term Frequencies
         for(String token: docTerms) {
             if(frequency.containsKey(token)) {
-                frequency.replace(token, frequency.get(token) + 1);
+                frequency.replace(token, (frequency.get(token) + 1));
             }
             else {
                 frequency.put(token, 1);

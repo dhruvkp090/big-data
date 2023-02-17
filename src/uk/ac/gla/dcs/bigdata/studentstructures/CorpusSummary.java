@@ -4,11 +4,12 @@ import java.io.Serializable;
 
 //This is the class representing the information about the corpus
 public class CorpusSummary implements Serializable {
+	private static final long serialVersionUID = 1L;
 	long totalDocuments; //the total number of documents in the corpus
 	float averageDocumentLength; //the average length of the corpus
-	TokenFrequency<Integer> queryTermsFrequency; //the sum of term frequencies for the set of all the terms in queries across all documents
+	TokenFrequency queryTermsFrequency; //the sum of term frequencies for the set of all the terms in queries across all documents
 	
-	public CorpusSummary(int totalDocuments, float averageDocumentLength,TokenFrequency<Integer> queryTermsFrequency) {
+	public CorpusSummary(int totalDocuments, float averageDocumentLength,TokenFrequency queryTermsFrequency) {
 		this.totalDocuments = totalDocuments;
 		this.averageDocumentLength = averageDocumentLength;
 		this.queryTermsFrequency = queryTermsFrequency;
@@ -23,7 +24,7 @@ public class CorpusSummary implements Serializable {
 		return averageDocumentLength;
 	}
 	
-	public TokenFrequency<Integer> getQueryTermsFrequency(){
+	public TokenFrequency getQueryTermsFrequency(){
 		return queryTermsFrequency;
 	}
 	
@@ -35,7 +36,7 @@ public class CorpusSummary implements Serializable {
 		this.averageDocumentLength = averageDocumentLength;
 	}
 	
-	public void setQueryTermsFrequency(TokenFrequency<Integer> queryTermsFrequency){
+	public void setQueryTermsFrequency(TokenFrequency queryTermsFrequency){
 		this.queryTermsFrequency = queryTermsFrequency;
 	}
 	

@@ -6,7 +6,7 @@ public class TokenizedNewsArticle {
     String id;
     List<String> title;
     int length;
-    TokenFrequency<Short> frequency;
+    TokenFrequency frequency;
 
     public TokenizedNewsArticle() {
         this.id = null;
@@ -15,7 +15,7 @@ public class TokenizedNewsArticle {
         this.frequency = null;
     }
 
-    public TokenizedNewsArticle(String id, List<String> title, int length, TokenFrequency<Short> frequency) {
+    public TokenizedNewsArticle(String id, List<String> title, int length, TokenFrequency frequency) {
         this.id = id;
         this.title = title;
         this.length = length;
@@ -46,11 +46,11 @@ public class TokenizedNewsArticle {
         this.length = length;
     }
 
-    public TokenFrequency<Short> getFrequency() {
+    public TokenFrequency getFrequency() {
         return frequency;
     }
 
-    public void setFrequency(TokenFrequency<Short> frequency) {
+    public void setFrequency(TokenFrequency frequency) {
         this.frequency = frequency;
     }
 }

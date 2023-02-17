@@ -21,6 +21,7 @@ import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
+import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequencyShort;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**

@@ -32,7 +32,7 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, RankedResult
 		int totalfreq = 1;
 		for(String term: query.getQueryTerms()) {
 			if(value.getFrequency().getFrequency().get(term) != null) {
-				tf = value.getFrequency().getFrequency().get(term);
+				tf = value.getFrequency().getFrequency().get(term).shortValue();
 				}
 			if(corpus.value().getQueryTermsFrequency().getFrequency().get(term) !=null) {
 				totalfreq = corpus.value().getQueryTermsFrequency().getFrequency().get(term);
