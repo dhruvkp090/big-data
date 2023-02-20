@@ -9,7 +9,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
@@ -23,15 +22,12 @@ import uk.ac.gla.dcs.bigdata.providedutilities.TextDistanceCalculator;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequencyShort;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
-import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 import static org.apache.spark.sql.functions.desc;
@@ -246,23 +242,6 @@ public class AssessedExercise {
 			rankedfilteredQueries.add(dr_new);
 			
 			System.out.println("Process done for Query: " + current_query.getOriginalQuery());
-
-			
-			
-			
-//			
-//			for (RankedResult r : sortedList) {
-//				Dataset<RankedResult> dedup = sorted.map(new DeDupMap(r), Encoders.bean(RankedResult.class));
-//				dedup.dropDuplicates();
-//				filteredDocs.add(new DocumentRanking(dr.getQuery(), dedup.collectAsList()));
-//				filteredResult.add(dedup.head());
-//				System.out.println(r.getArticle().getTitle() + " -- " + r.getDocid() + " -- " + r.getArticle().getId() + " - " + r.getScore());
-//				dups.add(r.getDocid());
-//				sorted = sorted.filter(sorted.col("docid").isInCollection(dups) );
-//				
-//			}
-//			System.out.println(filteredResult.get(0));
-			// here need to get 10 best from filtered result
 		}
 
 		return rankedfilteredQueries; // replace this with the the list of DocumentRanking output by your topology
