@@ -41,7 +41,7 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, RankedResult
 			score += score1;
 		}
 		
-		return new RankedResult(value.getArticle().getId(), value.getArticle(), score);
+		return new RankedResult(value.getArticle().getId(), value.getArticle(), score/(query.getQueryTerms().size()));
 	}
 
 }
