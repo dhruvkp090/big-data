@@ -21,6 +21,7 @@ public class NewsArticle implements Serializable {
 	String type; // type of the article
 	String source; // news provider
 	
+	
 	public NewsArticle() {}
 	
 	public NewsArticle(String id, String article_url, String title, String author, long published_date,
