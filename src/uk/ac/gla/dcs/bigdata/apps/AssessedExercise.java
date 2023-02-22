@@ -22,12 +22,10 @@ import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
-import uk.ac.gla.dcs.bigdata.providedutilities.TextDistanceCalculator;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.RankedResultQuery;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequencyShort;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
@@ -182,13 +180,12 @@ public class AssessedExercise {
 		List<Query> queryList = queries.collectAsList();
 		
 		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));
-		List<TokenizedNewsArticle> allNewsarticles = rankedDocuments.collectAsList();
+		rankedDocuments.count();
 		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
-//		queryDocScores.add(new RankedResultQuery());
-//		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));
+		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));
 //		
-//		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
-//		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
+		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
+		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
 		for(RankedResultQuery line:queryDocScores) {
 			System.out.println(line.getArticle().getTitle()+" "+ line.getQuery().getOriginalQuery()+ " " +line.getScore() );
 		}
