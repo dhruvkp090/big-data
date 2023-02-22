@@ -12,8 +12,10 @@ import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-
+import org.apache.spark.util.CollectionAccumulator;
 import org.apache.spark.util.LongAccumulator;
+
+
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
@@ -23,6 +25,7 @@ import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.providedutilities.TextDistanceCalculator;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
+import uk.ac.gla.dcs.bigdata.studentstructures.RankedResultQuery;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequencyShort;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
@@ -173,93 +176,20 @@ public class AssessedExercise {
 				.broadcast(detailsDataset);
 
 		//Document Ranking objects for all the queries
-		List<DocumentRanking> rankedQueries = new ArrayList<>();
-
+		CollectionAccumulator<RankedResultQuery> queryResutsAccumulator = new CollectionAccumulator<RankedResultQuery>();
+		spark.sparkContext().register(queryResutsAccumulator);
 		List<Query> queryList = queries.collectAsList();
-		for (Query q : queryList) {
-			Dataset<RankedResult> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, q),
-					Encoders.bean(RankedResult.class));
-			rankedQueries.add(new DocumentRanking(q, rankedDocuments.collectAsList())); //Document ranking keeps only 10 reults, need to alter this
-		}
+		
+		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));
+		List<TokenizedNewsArticle> allNewsarticles = rankedDocuments.collectAsList();
+		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
+		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));
+		
+		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
+		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
+		System.out.println(querytoDocuments);
 
-		// Redundancy filtered and Sorted Document Ranking objects for all the queries
-		List<DocumentRanking> rankedfilteredQueries = new ArrayList<>();
-		 // Iterate over all the queries
-		for (DocumentRanking dr : rankedQueries) {
-			// Get the list of Ranked Result Objects for the query in consideration
-			List<RankedResult> results = dr.getResults();
-			// Get the corresponding Query Object
-			Query current_query = dr.getQuery();
-			// Create a dataset of Ranked Result Objects
-			Dataset<RankedResult> queryResults = spark.createDataset(results, Encoders.bean(RankedResult.class));
-			//Returns x best ranked results in descending order
-			Dataset<RankedResult> sorted = queryResults.sort(desc("score"));
-			// Action that gets the list of all the Ranked Result Objects
-			List<RankedResult> sortedList = sorted.collectAsList();
-
-			// Create a new list of Ranked Result Objects for top items without redundancy
-			List<RankedResult> filteredList = new ArrayList<>();
-			//Add the top most item to the list, because it should anyway be in the list as it is the best match according to DH score
-			filteredList.add(sortedList.get(0));
-			//The current considered item number in the sortedList
-			Integer num = 1;
-
-			// Loop till the number of items become the required number
-			while(filteredList.size() < 10) {
-				// Handling the error when the num is higher than the (length 0f sortedList-1)
-				if (num >= sortedList.size()) {
-					System.out.println("Warning: List of out of index before filtering 10 documents");
-					System.out.println("Current size of filteredList: " + filteredList.size());
-					break;
-				}
-				//Get the title 0f the article
-				String title1 = sortedList.get(num).getArticle().getTitle();
-				// Variable thatThe current considering article title is not similar to any of the title of articles in the final filteredList
-				Boolean not_similar = true;
-
-				// Check if there is any similar article title in the filteredList
-				for (RankedResult doc :filteredList ){
-					String title2 = doc.getArticle().getTitle();
-					double distance = TextDistanceCalculator.similarity(title1, title2);
-					if (distance<0.5) {
-						not_similar = false; //If there is a similar article title
-						num++;
-						break;
-					}
-				}
-
-				// If there are no similar titles in the list, the Ranked Result Object is added to the filteredList
-				if (not_similar) {
-					filteredList.add(sortedList.get(num));
-					num++;
-					}
-			}
-			// Create the Document Ranking Object for the query and filtered sorted list of RankedResult objects
-			DocumentRanking dr_new = new DocumentRanking(current_query,filteredList);
-			// Add the Document Ranking object to the output list
-			rankedfilteredQueries.add(dr_new);
-
-			System.out.println("Process done for Query: " + current_query.getOriginalQuery());
-
-
-
-
-//
-//			for (RankedResult r : sortedList) {
-//				Dataset<RankedResult> dedup = sorted.map(new DeDupMap(r), Encoders.bean(RankedResult.class));
-//				dedup.dropDuplicates();
-//				filteredDocs.add(new DocumentRanking(dr.getQuery(), dedup.collectAsList()));
-//				filteredResult.add(dedup.head());
-//				System.out.println(r.getArticle().getTitle() + " -- " + r.getDocid() + " -- " + r.getArticle().getId() + " - " + r.getScore());
-//				dups.add(r.getDocid());
-//				sorted = sorted.filter(sorted.col("docid").isInCollection(dups) );
-//
-//			}
-//			System.out.println(filteredResult.get(0));
-			// here need to get 10 best from filtered result
-		}
-
-		return rankedfilteredQueries; // replace this with the the list of DocumentRanking output by your topology
+		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
 
 }
