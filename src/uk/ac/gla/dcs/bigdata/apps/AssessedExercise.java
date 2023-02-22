@@ -176,8 +176,8 @@ public class AssessedExercise {
 				.broadcast(detailsDataset);
 
 		//Document Ranking objects for all the queries
-		CollectionAccumulator<RankedResultQuery> queryResutsAccumulator = new CollectionAccumulator<RankedResultQuery>();
-		spark.sparkContext().register(queryResutsAccumulator);
+		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
+		spark.sparkContext().register(queryResutsAccumulator, "test");
 		List<Query> queryList = queries.collectAsList();
 		
 		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));

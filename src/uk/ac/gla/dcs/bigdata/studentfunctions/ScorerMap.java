@@ -20,9 +20,9 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, TokenizedNew
 	private static final long serialVersionUID = 1L;
 	private Broadcast<CorpusSummary> corpus;
 	private List<Query> queryList;
-	private CollectionAccumulator<RankedResultQuery> queryResutsAccumulator;
+	private RankedResultAccumulator queryResutsAccumulator;
 
-	public ScorerMap(Broadcast<CorpusSummary> corpus, List<Query> queryList, CollectionAccumulator<RankedResultQuery> queryResutsAccumulator) {
+	public ScorerMap(Broadcast<CorpusSummary> corpus, List<Query> queryList, RankedResultAccumulator queryResutsAccumulator) {
 		this.corpus = corpus;
 		this.queryList = queryList;
 		this.queryResutsAccumulator = queryResutsAccumulator;
