@@ -10,7 +10,7 @@ public class CorpusSummary implements Serializable {
 	TokenFrequency queryTermsFrequency; // the sum of term frequencies for the set of all the terms in queries across
 										// all documents
 
-	public CorpusSummary(int totalDocuments, float averageDocumentLength, TokenFrequency queryTermsFrequency) {
+	public CorpusSummary(long totalDocuments, float averageDocumentLength, TokenFrequency queryTermsFrequency) {
 		this.totalDocuments = totalDocuments;
 		this.averageDocumentLength = averageDocumentLength;
 		this.queryTermsFrequency = queryTermsFrequency;
