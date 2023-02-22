@@ -176,13 +176,15 @@ public class AssessedExercise {
 				.broadcast(detailsDataset);
 
 		//Document Ranking objects for all the queries
-		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
+//		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
+		CollectionAccumulator<RankedResultQuery> queryResutsAccumulator = new CollectionAccumulator<RankedResultQuery>();
 		spark.sparkContext().register(queryResutsAccumulator, "test");
 		List<Query> queryList = queries.collectAsList();
 		
 		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));
 		List<TokenizedNewsArticle> allNewsarticles = rankedDocuments.collectAsList();
 		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
+//		queryDocScores.add(new RankedResultQuery());
 //		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));
 //		
 //		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
@@ -191,7 +193,7 @@ public class AssessedExercise {
 			System.out.println(line.getArticle().getTitle()+" "+ line.getQuery().getOriginalQuery()+ " " +line.getScore() );
 		}
 		
-
+		System.out.println("done");
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
 
