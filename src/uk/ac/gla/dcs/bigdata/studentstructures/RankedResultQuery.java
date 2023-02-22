@@ -5,7 +5,7 @@ import java.io.Serializable;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 
-public class RankedResultQuery implements Comparable<RankedResultQuery>{
+public class RankedResultQuery implements Serializable, Comparable<RankedResultQuery>{
 
 	private static final long serialVersionUID = -2905684103776472843L;
 	

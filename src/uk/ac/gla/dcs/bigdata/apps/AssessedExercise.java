@@ -183,11 +183,14 @@ public class AssessedExercise {
 		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));
 		List<TokenizedNewsArticle> allNewsarticles = rankedDocuments.collectAsList();
 		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
-		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));
+//		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));
+//		
+//		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
+//		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
+		for(RankedResultQuery line:queryDocScores) {
+			System.out.println(line.getArticle().getTitle()+" "+ line.getQuery().getOriginalQuery()+ " " +line.getScore() );
+		}
 		
-		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
-		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
-		System.out.println(querytoDocuments);
 
 		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
