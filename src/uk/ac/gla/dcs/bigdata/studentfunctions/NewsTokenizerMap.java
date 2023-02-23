@@ -18,11 +18,9 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
 
     private static final long serialVersionUID = 1L;
     private LongAccumulator totalDocLength;
-    private CollectionAccumulator<TokenFrequency> termAccumulator;
 
-    public NewsTokenizerMap(LongAccumulator totalDocLength, CollectionAccumulator<TokenFrequency> termAccumulator) {
+    public NewsTokenizerMap(LongAccumulator totalDocLength) {
         this.totalDocLength = totalDocLength;
-        this.termAccumulator = termAccumulator;
     }
 
     @Override
@@ -60,7 +58,6 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
 
         TokenFrequency frequency_object = new TokenFrequency(frequency);
         totalDocLength.add(docTerms.size());
-        termAccumulator.add(frequency_object);
 
         return new TokenizedNewsArticle(
                 tokenizedTitle,

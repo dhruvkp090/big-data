@@ -79,7 +79,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -129,10 +129,10 @@ public class AssessedExercise {
 //		// 2 filters are applied here, 1. filters out all news articles without title,
 //		// 2. calls custom filter function.
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
-		spark.sparkContext().register(termAccumulator, "frequency");
+//		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
+//		spark.sparkContext().register(termAccumulator, "frequency");
 
-		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength, termAccumulator),
+		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength),
 				Encoders.bean(TokenizedNewsArticle.class));
 //
 //		// ----------------------------------------------------------------
@@ -145,12 +145,13 @@ public class AssessedExercise {
 
 		// Extract the token frequencies of the documents by performing a map from
 		// TokenizedNewsArticle to a TokenFrequency object
+		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
+
+
 		long numberOfDocs = tokenNews.count();
-		Dataset<TokenFrequency> tokenFrequencies = spark.createDataset(termAccumulator.value(), Encoders.bean(TokenFrequency.class));
 		// Merge the token frequencies to get sum of term frequencies for the term
 		// across all documents in a parallel manner
 		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
-		termAccumulator.reset();
 
 		// Create a CorpusSummary object which contains total number of documents,
 		// average document length and total token frequecies
