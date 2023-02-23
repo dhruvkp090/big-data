@@ -2,6 +2,7 @@ package uk.ac.gla.dcs.bigdata.studentfunctions;
 
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.CollectionAccumulator;
 import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedutilities.TextPreProcessor;
@@ -18,12 +19,12 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
     private static final long serialVersionUID = 1L;
     private SparkSession spark;
     private LongAccumulator totalDocLength;
-    private LongAccumulator numberOfDocs;
+    private CollectionAccumulator<TokenFrequency> termAccumulator;
 
-    public NewsTokenizerMap(SparkSession spark, LongAccumulator totalDocLength, LongAccumulator numberOfDocs) {
+    public NewsTokenizerMap(SparkSession spark, LongAccumulator totalDocLength, CollectionAccumulator<TokenFrequency> termAccumulator) {
         this.spark = spark;
         this.totalDocLength = totalDocLength;
-        this.numberOfDocs = numberOfDocs;
+        this.termAccumulator = termAccumulator;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
         int count = 0;
         String firstFivePara = "";
         for (ContentItem content : contents) {
-            if (content.getSubtype() != null && content.getSubtype().equals("paragraph")) {
+            if (content != null && content.getSubtype() != null && content.getSubtype().equals("paragraph")) {
                 firstFivePara = firstFivePara + " " + content.getContent().replaceAll("http.*?\\s", " ");
                 count++;
             }
@@ -60,8 +61,8 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
         }
 
         TokenFrequency frequency_object = new TokenFrequency(frequency);
-        numberOfDocs.add(1);
         totalDocLength.add(docTerms.size());
+        termAccumulator.add(frequency_object);
 
         return new TokenizedNewsArticle(
                 tokenizedTitle,

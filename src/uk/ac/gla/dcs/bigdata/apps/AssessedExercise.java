@@ -37,6 +37,8 @@ import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
+import javax.xml.crypto.Data;
+
 import static org.apache.spark.sql.functions.desc;
 
 /**
@@ -136,24 +138,15 @@ public class AssessedExercise {
 //		// 2 filters are applied here, 1. filters out all news articles without title,
 //		// 2. calls custom filter function.
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-		LongAccumulator numberOfDocs = spark.sparkContext().longAccumulator();
+		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
+		spark.sparkContext().register(termAccumulator, "frequency");
 
-		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(spark, totalDocLength, numberOfDocs),
+		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(spark, totalDocLength, termAccumulator),
 				Encoders.bean(TokenizedNewsArticle.class));
-//
-//		// System.out.println(news.count());
-//		// System.out.println(filteredNews.count());
-//		// filteredNews.printSchema();
 //
 //		// ----------------------------------------------------------------
 //		// Your Spark Topology should be defined here
 //		// ----------------------------------------------------------------
-
-		//
-		// List<TokenizedNewsArticle> tokenNewsAll = tokenNews.collectAsList();
-		// for(TokenizedNewsArticle c: tokenNewsAll) {
-		// System.out.println(c.getFrequency());
-		// }
 
 		// Extract the lengths of the documents by performing a map from
 		// TokenizedNewsArticle to an integer (the length)
@@ -161,15 +154,15 @@ public class AssessedExercise {
 
 		// Extract the token frequencies of the documents by performing a map from
 		// TokenizedNewsArticle to a TokenFrequency object
-		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),
-				Encoders.bean(TokenFrequency.class));
+		long numberOfDocs = tokenNews.count();
+		Dataset<TokenFrequency> tokenFrequencies = spark.createDataset(termAccumulator.value(), Encoders.bean(TokenFrequency.class));
 		// Merge the token frequencies to get sum of term frequencies for the term
 		// across all documents in a parallel manner
 		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
 
 		// Create a CorpusSummary object which contains total number of documents,
 		// average document length and total token frequecies
-		CorpusSummary detailsDataset = new CorpusSummary(numberOfDocs.value(), totalDocLength.value() / numberOfDocs.value(), allTokenFrequencies);
+		CorpusSummary detailsDataset = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, allTokenFrequencies);
 
 		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
 				.broadcast(detailsDataset);
