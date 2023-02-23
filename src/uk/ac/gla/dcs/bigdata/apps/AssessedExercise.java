@@ -22,22 +22,13 @@ import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
-import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.RankedResultQuery;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
-import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
-import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
-
-import javax.xml.crypto.Data;
 
 import static org.apache.spark.sql.functions.desc;
 
