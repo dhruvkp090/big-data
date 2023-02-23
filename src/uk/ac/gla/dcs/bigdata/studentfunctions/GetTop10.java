@@ -29,7 +29,7 @@ public class GetTop10 implements MapGroupsFunction<Query, RankedResultQuery, Tup
 			if(size==0) {
 				result.add(new RankedResult(value.getDocid(),value.getArticle(),value.getScore()));
 			}else {
-				if(size<=10) {
+				if(size<10) {
 					Boolean is_similar = false;
 					for(RankedResult r : result) {
 						String title2 = r.getArticle().getTitle();

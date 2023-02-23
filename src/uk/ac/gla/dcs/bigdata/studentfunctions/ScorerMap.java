@@ -47,7 +47,7 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, TokenizedNew
 				double score1 = DPHScorer.getDPHScore((short)(tf+1), totalfreq+1, len, avglen, docs);
 			score += score1;
 			}
-			queryResutsAccumulator.add(new RankedResultQuery(value.getArticle().getId(), value.getArticle(), score, query));
+			queryResutsAccumulator.add(new RankedResultQuery(value.getArticle().getId(), value.getArticle(), score/query.getQueryTerms().size(), query));
 			
 		}
 		return value;

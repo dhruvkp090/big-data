@@ -194,23 +194,11 @@ public class AssessedExercise {
 		
 		Dataset<Tuple2<Query,DocumentRanking>> final_result = querytoDocuments.mapGroups(gettopresults, resultEncoder);
 		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
+		List<DocumentRanking> output = new ArrayList<>();
 		for(Tuple2<Query,DocumentRanking> t :final_results) {
-			System.out.println(t._1().getOriginalQuery());
-			for(RankedResult r: t._2().getResults()) {
-				System.out.println(r.getScore() + " " +r.getArticle().getTitle());
-			}
-			
+			output.add(t._2());
 		}
-		
-		
-		
-
-//		for(RankedResultQuery line:_a) {
-//			System.out.println(line.getArticle().getTitle()+" "+ line.getQuery().getOriginalQuery()+ " " +line.getScore() );
-//		}
-//		
-//		System.out.println("done");
-		return null; // replace this with the the list of DocumentRanking output by your topology
+		return output; // replace this with the the list of DocumentRanking output by your topology
 	}
 
 }

@@ -46,6 +46,7 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
             }
         }
         List<String> docTerms = tokenize.process(firstFivePara); // Tokenize Docterms
+        docTerms.addAll(tokenizedTitle);
 
         HashMap<String, Integer> frequency = new HashMap<>();
 
