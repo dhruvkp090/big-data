@@ -8,6 +8,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoder;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.KeyValueGroupedDataset;
 import org.apache.spark.sql.Row;
@@ -15,7 +16,7 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.CollectionAccumulator;
 import org.apache.spark.util.LongAccumulator;
 
-
+import scala.Tuple2;
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
@@ -187,7 +188,20 @@ public class AssessedExercise {
 		List<RankedResultQuery> _a = queryDocumentSorted.collectAsList();
 		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
 		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentSorted.groupByKey(keyFunction, Encoders.bean(Query.class));
-		System.out.println(querytoDocuments.mapGroups(null, null)+ "***************");
+		
+		GetTop10 gettopresults = new GetTop10();
+		Encoder<Tuple2<Query,DocumentRanking>> resultEncoder = Encoders.tuple(Encoders.bean(Query.class), Encoders.bean(DocumentRanking.class));
+		
+		Dataset<Tuple2<Query,DocumentRanking>> final_result = querytoDocuments.mapGroups(gettopresults, resultEncoder);
+		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
+		for(Tuple2<Query,DocumentRanking> t :final_results) {
+			System.out.println(t._1().getOriginalQuery());
+			
+		}
+		
+		
+		
+
 //		for(RankedResultQuery line:_a) {
 //			System.out.println(line.getArticle().getTitle()+" "+ line.getQuery().getOriginalQuery()+ " " +line.getScore() );
 //		}
