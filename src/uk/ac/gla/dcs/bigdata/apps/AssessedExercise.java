@@ -159,6 +159,7 @@ public class AssessedExercise {
 		// Merge the token frequencies to get sum of term frequencies for the term
 		// across all documents in a parallel manner
 		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
+		termAccumulator.reset();
 
 		// Create a CorpusSummary object which contains total number of documents,
 		// average document length and total token frequecies
@@ -178,7 +179,6 @@ public class AssessedExercise {
 		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
 		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));	
 		Dataset<RankedResultQuery> queryDocumentSorted = queryDocumentScores.sort(desc("score"));
-		List<RankedResultQuery> _a = queryDocumentSorted.collectAsList();
 		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
 		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentSorted.groupByKey(keyFunction, Encoders.bean(Query.class));
 		
