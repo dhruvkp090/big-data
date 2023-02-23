@@ -22,22 +22,13 @@ import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
-import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.RankedResultQuery;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
-import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
-import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
-import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
-
-import javax.xml.crypto.Data;
 
 import static org.apache.spark.sql.functions.desc;
 
@@ -88,7 +79,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -138,10 +129,10 @@ public class AssessedExercise {
 //		// 2 filters are applied here, 1. filters out all news articles without title,
 //		// 2. calls custom filter function.
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
-		spark.sparkContext().register(termAccumulator, "frequency");
+//		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
+//		spark.sparkContext().register(termAccumulator, "frequency");
 
-		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength, termAccumulator),
+		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength),
 				Encoders.bean(TokenizedNewsArticle.class));
 //
 //		// ----------------------------------------------------------------
@@ -154,8 +145,10 @@ public class AssessedExercise {
 
 		// Extract the token frequencies of the documents by performing a map from
 		// TokenizedNewsArticle to a TokenFrequency object
+		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
+
+
 		long numberOfDocs = tokenNews.count();
-		Dataset<TokenFrequency> tokenFrequencies = spark.createDataset(termAccumulator.value(), Encoders.bean(TokenFrequency.class));
 		// Merge the token frequencies to get sum of term frequencies for the term
 		// across all documents in a parallel manner
 		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
@@ -178,7 +171,6 @@ public class AssessedExercise {
 		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
 		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));	
 		Dataset<RankedResultQuery> queryDocumentSorted = queryDocumentScores.sort(desc("score"));
-		List<RankedResultQuery> _a = queryDocumentSorted.collectAsList();
 		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
 		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentSorted.groupByKey(keyFunction, Encoders.bean(Query.class));
 		
