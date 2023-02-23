@@ -196,6 +196,9 @@ public class AssessedExercise {
 		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
 		for(Tuple2<Query,DocumentRanking> t :final_results) {
 			System.out.println(t._1().getOriginalQuery());
+			for(RankedResult r: t._2().getResults()) {
+				System.out.println(r.getScore() + " " +r.getArticle().getTitle());
+			}
 			
 		}
 		

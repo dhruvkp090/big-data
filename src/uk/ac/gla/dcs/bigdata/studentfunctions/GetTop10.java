@@ -29,43 +29,23 @@ public class GetTop10 implements MapGroupsFunction<Query, RankedResultQuery, Tup
 			if(size==0) {
 				result.add(new RankedResult(value.getDocid(),value.getArticle(),value.getScore()));
 			}else {
-				if(size<10) {
-					Boolean not_similar = true;
+				if(size<=10) {
+					Boolean is_similar = false;
 					for(RankedResult r : result) {
 						String title2 = r.getArticle().getTitle();
 						double distance = TextDistanceCalculator.similarity(title1, title2);
 						if(distance<0.5) {
-							not_similar = true;
+							is_similar = true;
 							break;
 							
 						}
-					if(not_similar) {
-						result.add(new RankedResult(value.getDocid(),value.getArticle(),value.getScore()));
 					}
+					if(!is_similar) {
+						result.add(new RankedResult(value.getDocid(),value.getArticle(),value.getScore()));
 					}
 					
 				}else {
-					Boolean not_similar = true;
-					for(RankedResult r : result) {
-						String title2 = r.getArticle().getTitle();
-						double distance = TextDistanceCalculator.similarity(title1, title2);
-						if(distance<0.5) {
-							not_similar = true;
-							break;
-							
-						}
-					if(not_similar) {
-						for(RankedResult r1 : result) {
-							if(r1.getScore()<value.getScore()) {
-								result.remove(r1);
-								result.add(new RankedResult(value.getDocid(),value.getArticle(),value.getScore()));
-								break;
-								
-							}
-						}
-					}
-						
-					}
+					break;
 						
 					
 				}
