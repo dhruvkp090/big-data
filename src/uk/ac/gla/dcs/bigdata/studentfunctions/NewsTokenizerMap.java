@@ -17,12 +17,10 @@ import org.apache.spark.util.LongAccumulator;
 public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsArticle> {
 
     private static final long serialVersionUID = 1L;
-    private SparkSession spark;
     private LongAccumulator totalDocLength;
     private CollectionAccumulator<TokenFrequency> termAccumulator;
 
-    public NewsTokenizerMap(SparkSession spark, LongAccumulator totalDocLength, CollectionAccumulator<TokenFrequency> termAccumulator) {
-        this.spark = spark;
+    public NewsTokenizerMap(LongAccumulator totalDocLength, CollectionAccumulator<TokenFrequency> termAccumulator) {
         this.totalDocLength = totalDocLength;
         this.termAccumulator = termAccumulator;
     }

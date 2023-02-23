@@ -141,7 +141,7 @@ public class AssessedExercise {
 		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
 		spark.sparkContext().register(termAccumulator, "frequency");
 
-		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(spark, totalDocLength, termAccumulator),
+		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength, termAccumulator),
 				Encoders.bean(TokenizedNewsArticle.class));
 //
 //		// ----------------------------------------------------------------
