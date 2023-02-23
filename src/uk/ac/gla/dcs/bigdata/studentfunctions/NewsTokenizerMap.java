@@ -2,6 +2,7 @@ package uk.ac.gla.dcs.bigdata.studentfunctions;
 
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.LongAccumulator;
 import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedutilities.TextPreProcessor;
@@ -14,10 +15,10 @@ import java.util.List;
 public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsArticle> {
 
     private static final long serialVersionUID = 1L;
-    private SparkSession spark;
+    private LongAccumulator totalDocLength;
 
-    public NewsTokenizerMap(SparkSession spark) {
-        this.spark = spark;
+    public NewsTokenizerMap(LongAccumulator totalDocLength) {
+        this.totalDocLength = totalDocLength;
     }
 
     @Override
@@ -31,7 +32,7 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
         int count = 0;
         String firstFivePara = "";
         for (ContentItem content : contents) {
-            if (content.getSubtype() != null && content.getSubtype().equals("paragraph")) {
+            if (content != null && content.getSubtype() != null && content.getSubtype().equals("paragraph")) {
                 firstFivePara = firstFivePara + " " + content.getContent().replaceAll("http.*?\\s", " ");
                 count++;
             }
@@ -40,6 +41,7 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
             }
         }
         List<String> docTerms = tokenize.process(firstFivePara); // Tokenize Docterms
+        docTerms.addAll(tokenizedTitle);
 
         HashMap<String, Integer> frequency = new HashMap<>();
 
@@ -53,6 +55,7 @@ public class NewsTokenizerMap implements MapFunction<NewsArticle, TokenizedNewsA
         }
 
         TokenFrequency frequency_object = new TokenFrequency(frequency);
+        totalDocLength.add(docTerms.size());
 
         return new TokenizedNewsArticle(
                 tokenizedTitle,
