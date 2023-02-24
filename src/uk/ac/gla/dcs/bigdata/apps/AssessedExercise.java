@@ -121,29 +121,21 @@ public class AssessedExercise {
 																										// a Query
 
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this
-																											// converts
+																										// converts
 																											// each row
 																											// into a
 																											// NewsArticle
-//		// 2 filters are applied here, 1. filters out all news articles without title,
-//		// 2. calls custom filter function.
+		
+		List<Query> queryList = queries.collectAsList();
+		List<String> queryTerms = new ArrayList<>();
+		for (Query q : queryList) {
+			
+			queryTerms.addAll(q.getQueryTerms());
+		}
+		
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-//		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
-//		spark.sparkContext().register(termAccumulator, "frequency");
-
-		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength),
-				Encoders.bean(TokenizedNewsArticle.class));
-//
-//		// ----------------------------------------------------------------
-//		// Your Spark Topology should be defined here
-//		// ----------------------------------------------------------------
-
-		// Extract the lengths of the documents by performing a map from
-		// TokenizedNewsArticle to an integer (the length)
-		// Calculate the average
-
-		// Extract the token frequencies of the documents by performing a map from
-		// TokenizedNewsArticle to a TokenFrequency object
+		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
+		Dataset<TokenizedNewsArticle> tokenNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
 		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
 
 
@@ -163,7 +155,7 @@ public class AssessedExercise {
 //		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
 		CollectionAccumulator<DocumentRanking> queryResutsAccumulator = new CollectionAccumulator<DocumentRanking>();
 		spark.sparkContext().register(queryResutsAccumulator, "test");
-		List<Query> queryList = queries.collectAsList();
+		
 		
 		Dataset<Byte> __ = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.BYTE());
 		__.count();
