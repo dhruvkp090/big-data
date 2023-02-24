@@ -54,7 +54,7 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
             // For each term in the queries list gets the number of times term appear in the document
             for (String token : queryTerms) {
             	int occurrences = Collections.frequency(docTerms, token);
-            	frequency.put(token, occurrences+1);
+            	frequency.put(token, occurrences);
             }
             TokenFrequency frequency_object = new TokenFrequency(frequency);
             totalDocLength.add(docTerms.size());
