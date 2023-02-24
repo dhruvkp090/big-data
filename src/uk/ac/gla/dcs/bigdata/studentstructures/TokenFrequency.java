@@ -13,7 +13,7 @@ public class TokenFrequency implements Serializable{
         this.frequency = null;
     }
 	
-    public TokenFrequency(HashMap<String, Integer> frequency) {
+    public TokenFrequency(Map<String, Integer> frequency) {
         this.frequency = frequency;
     }
     

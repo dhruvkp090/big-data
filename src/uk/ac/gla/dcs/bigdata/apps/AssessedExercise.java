@@ -78,7 +78,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -127,26 +127,27 @@ public class AssessedExercise {
 																											// NewsArticle
 		
 		List<Query> queryList = queries.collectAsList();
-		List<String> queryTerms = new ArrayList<>();
+		Map<String, Integer> queryTerms = new HashMap<>();
 		for (Query q : queryList) {
-			
-			queryTerms.addAll(q.getQueryTerms());
+			for(String t: q.getQueryTerms()) {
+				queryTerms.put(t, 0);
+			}
 		}
 		
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
 		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
 		Dataset<TokenizedNewsArticle> tokenNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
-		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
+//		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
 
 
 		long numberOfDocs = tokenNews.count();
-		// Merge the token frequencies to get sum of term frequencies for the term
-		// across all documents in a parallel manner
-		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
+//		// Merge the token frequencies to get sum of term frequencies for the term
+//		// across all documents in a parallel manner
+//		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
 
 		// Create a CorpusSummary object which contains total number of documents,
 		// average document length and total token frequecies
-		CorpusSummary detailsDataset = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, allTokenFrequencies);
+		CorpusSummary detailsDataset = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, new TokenFrequency(queryTerms));
 
 		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
 				.broadcast(detailsDataset);
