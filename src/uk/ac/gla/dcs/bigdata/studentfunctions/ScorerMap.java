@@ -1,5 +1,6 @@
 package uk.ac.gla.dcs.bigdata.studentfunctions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.api.java.function.MapFunction;
@@ -7,6 +8,7 @@ import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.util.CollectionAccumulator;
 
+import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
 import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
@@ -15,20 +17,20 @@ import uk.ac.gla.dcs.bigdata.studentstructures.RankedResultQuery;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 import uk.ac.gla.dcs.bigdata.providedutilities.DPHScorer;
 
-public class ScorerMap implements MapFunction<TokenizedNewsArticle, TokenizedNewsArticle> {
+public class ScorerMap implements MapFunction<TokenizedNewsArticle, Byte> {
 
 	private static final long serialVersionUID = 1L;
 	private Broadcast<CorpusSummary> corpus;
 	private List<Query> queryList;
-	private CollectionAccumulator<RankedResultQuery> queryResutsAccumulator;
+	private CollectionAccumulator<DocumentRanking> queryResutsAccumulator;
 
-	public ScorerMap(Broadcast<CorpusSummary> corpus, List<Query> queryList, CollectionAccumulator<RankedResultQuery> queryResutsAccumulator) {
+	public ScorerMap(Broadcast<CorpusSummary> corpus, List<Query> queryList, CollectionAccumulator<DocumentRanking> queryResutsAccumulator) {
 		this.corpus = corpus;
 		this.queryList = queryList;
 		this.queryResutsAccumulator = queryResutsAccumulator;
 	}
 	@Override
-	public TokenizedNewsArticle call(TokenizedNewsArticle value) throws Exception {
+	public Byte call(TokenizedNewsArticle value) throws Exception {
 		for (Query query : queryList) {
 		
 			int len = value.getLength();
@@ -47,10 +49,14 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, TokenizedNew
 				double score1 = DPHScorer.getDPHScore((short)(tf+1), totalfreq+1, len, avglen, docs);
 			score += score1;
 			}
-			queryResutsAccumulator.add(new RankedResultQuery(value.getArticle().getId(), value.getArticle(), score/query.getQueryTerms().size(), query));
+			RankedResult a = new RankedResult(value.getArticle().getId(), value.getArticle(), score/query.getQueryTerms().size());
+			List<RankedResult> b = new ArrayList<>();
+			b.add(a);
+			DocumentRanking dr = new DocumentRanking(query, b);
+			queryResutsAccumulator.add(dr);
 			
 		}
-		return value;
+		return 0;
 		
 		
 	}

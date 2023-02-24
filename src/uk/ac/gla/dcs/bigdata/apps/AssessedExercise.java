@@ -22,12 +22,11 @@ import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
+import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.RankedResultQuery;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
-import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
-import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 import static org.apache.spark.sql.functions.desc;
@@ -79,7 +78,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -162,28 +161,39 @@ public class AssessedExercise {
 
 		//Document Ranking objects for all the queries
 //		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
-		CollectionAccumulator<RankedResultQuery> queryResutsAccumulator = new CollectionAccumulator<RankedResultQuery>();
+		CollectionAccumulator<DocumentRanking> queryResutsAccumulator = new CollectionAccumulator<DocumentRanking>();
 		spark.sparkContext().register(queryResutsAccumulator, "test");
 		List<Query> queryList = queries.collectAsList();
 		
-		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));
-		rankedDocuments.count();
-		List<RankedResultQuery> queryDocScores = queryResutsAccumulator.value();
-		Dataset<RankedResultQuery> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(RankedResultQuery.class));	
-		Dataset<RankedResultQuery> queryDocumentSorted = queryDocumentScores.sort(desc("score"));
-		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
-		KeyValueGroupedDataset<Query, RankedResultQuery> querytoDocuments = queryDocumentSorted.groupByKey(keyFunction, Encoders.bean(Query.class));
+		Dataset<Byte> __ = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.BYTE());
+		__.count();
+		List<DocumentRanking> queryDocScores = queryResutsAccumulator.value();
+//		KeyValueGroupedDataset<Integer, SteamGameStats> gamesByMetaCriticScore = steamGames.groupByKey(keyFunction, Encoders.INT());
 		
-		GetTop10 gettopresults = new GetTop10();
-		Encoder<Tuple2<Query,DocumentRanking>> resultEncoder = Encoders.tuple(Encoders.bean(Query.class), Encoders.bean(DocumentRanking.class));
+		Dataset<DocumentRanking> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(DocumentRanking.class));
+		KeyFunctionMap keyFunction = new KeyFunctionMap();
+		KeyValueGroupedDataset<Query, DocumentRanking> resultsByQueries = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
 		
-		Dataset<Tuple2<Query,DocumentRanking>> final_result = querytoDocuments.mapGroups(gettopresults, resultEncoder);
-		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
-		List<DocumentRanking> output = new ArrayList<>();
-		for(Tuple2<Query,DocumentRanking> t :final_results) {
-			output.add(t._2());
+		Dataset<Tuple2<Query, DocumentRanking>> output = resultsByQueries.reduceGroups(new DocumentRankingReducer());
+		
+//		Dataset<DocumentRanking> queryDocumentSorted = queryDocumentScores.sort(desc("score"));
+//		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
+//		KeyValueGroupedDataset<Query, RankedResult> querytoDocuments = queryDocumentSorted.groupByKey(keyFunction, Encoders.bean(Query.class));
+//		
+//		GetTop10 gettopresults = new GetTop10();
+//		Encoder<Tuple2<Query,DocumentRanking>> resultEncoder = Encoders.tuple(Encoders.bean(Query.class), Encoders.bean(DocumentRanking.class));
+//		
+//		Dataset<Tuple2<Query,DocumentRanking>> final_result = querytoDocuments.mapGroups(gettopresults, resultEncoder);
+//		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
+//		List<DocumentRanking> output = new ArrayList<>();
+		List<Tuple2<Query, DocumentRanking>> finalResults = output.collectAsList(); 
+		for(Tuple2<Query,DocumentRanking> t :finalResults) {
+			System.out.println(t._1().getOriginalQuery());
+			for(RankedResult r:t._2().getResults()) {
+				System.out.println(r.getArticle().getTitle()+" "+r.getScore());
+			}
 		}
-		return output; // replace this with the the list of DocumentRanking output by your topology
+		return null; // replace this with the the list of DocumentRanking output by your topology
 	}
 
 }
