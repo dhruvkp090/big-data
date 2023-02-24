@@ -79,7 +79,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -122,29 +122,21 @@ public class AssessedExercise {
 																										// a Query
 
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this
-																											// converts
+																										// converts
 																											// each row
 																											// into a
 																											// NewsArticle
-//		// 2 filters are applied here, 1. filters out all news articles without title,
-//		// 2. calls custom filter function.
+		
+		List<Query> queryList = queries.collectAsList();
+		List<String> queryTerms = new ArrayList<>();
+		for (Query q : queryList) {
+			
+			queryTerms.addAll(q.getQueryTerms());
+		}
+		
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-//		CollectionAccumulator<TokenFrequency> termAccumulator = new CollectionAccumulator<TokenFrequency>();
-//		spark.sparkContext().register(termAccumulator, "frequency");
-
-		Dataset<TokenizedNewsArticle> tokenNews = news.filter(news.col("title").isNotNull()).map(new NewsTokenizerMap(totalDocLength),
-				Encoders.bean(TokenizedNewsArticle.class));
-//
-//		// ----------------------------------------------------------------
-//		// Your Spark Topology should be defined here
-//		// ----------------------------------------------------------------
-
-		// Extract the lengths of the documents by performing a map from
-		// TokenizedNewsArticle to an integer (the length)
-		// Calculate the average
-
-		// Extract the token frequencies of the documents by performing a map from
-		// TokenizedNewsArticle to a TokenFrequency object
+		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
+		Dataset<TokenizedNewsArticle> tokenNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
 		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
 
 
@@ -164,7 +156,7 @@ public class AssessedExercise {
 //		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
 		CollectionAccumulator<RankedResultQuery> queryResutsAccumulator = new CollectionAccumulator<RankedResultQuery>();
 		spark.sparkContext().register(queryResutsAccumulator, "test");
-		List<Query> queryList = queries.collectAsList();
+		
 		
 		Dataset<TokenizedNewsArticle> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.bean(TokenizedNewsArticle.class));
 		rankedDocuments.count();
