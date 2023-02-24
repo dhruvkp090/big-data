@@ -78,7 +78,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -153,20 +153,29 @@ public class AssessedExercise {
 
 		//Document Ranking objects for all the queries
 //		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
-		CollectionAccumulator<DocumentRanking> queryResutsAccumulator = new CollectionAccumulator<DocumentRanking>();
-		spark.sparkContext().register(queryResutsAccumulator, "test");
+//		CollectionAccumulator<DocumentRanking> queryResutsAccumulator = new CollectionAccumulator<DocumentRanking>();
+//		spark.sparkContext().register(queryResutsAccumulator, "test");
+//		
+//		
+//		Dataset<Byte> __ = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.BYTE());
+//		__.count();
+//		List<DocumentRanking> queryDocScores = queryResutsAccumulator.value();
+////		KeyValueGroupedDataset<Integer, SteamGameStats> gamesByMetaCriticScore = steamGames.groupByKey(keyFunction, Encoders.INT());
+//		
+//		Dataset<DocumentRanking> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(DocumentRanking.class));
+		List<DocumentRanking> check = new ArrayList<>();
+		for (Query q : queryList) {
+
+			Dataset<DocumentRanking> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(DocumentRanking.class));
+			
+			DocumentRanking output = rankedDocuments.reduce(new DocumentRankingReducer());
+			check.add(output);
+		}
 		
 		
-		Dataset<Byte> __ = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.BYTE());
-		__.count();
-		List<DocumentRanking> queryDocScores = queryResutsAccumulator.value();
-//		KeyValueGroupedDataset<Integer, SteamGameStats> gamesByMetaCriticScore = steamGames.groupByKey(keyFunction, Encoders.INT());
-		
-		Dataset<DocumentRanking> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(DocumentRanking.class));
-		KeyFunctionMap keyFunction = new KeyFunctionMap();
-		KeyValueGroupedDataset<Query, DocumentRanking> resultsByQueries = queryDocumentScores.groupByKey(keyFunction, Encoders.bean(Query.class));
-		
-		Dataset<Tuple2<Query, DocumentRanking>> output = resultsByQueries.reduceGroups(new DocumentRankingReducer());
+//		KeyValueGroupedDataset<Query, DocumentRanking> resultsByQueries = rankedDocuments.groupByKey(keyFunction, Encoders.bean(Query.class));
+//		
+//		Dataset<Tuple2<Query, DocumentRanking>> output = resultsByQueries.reduceGroups(new DocumentRankingReducer());
 		
 //		Dataset<DocumentRanking> queryDocumentSorted = queryDocumentScores.sort(desc("score"));
 //		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
@@ -178,14 +187,16 @@ public class AssessedExercise {
 //		Dataset<Tuple2<Query,DocumentRanking>> final_result = querytoDocuments.mapGroups(gettopresults, resultEncoder);
 //		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
 //		List<DocumentRanking> output = new ArrayList<>();
-		List<Tuple2<Query, DocumentRanking>> finalResults = output.collectAsList(); 
-		for(Tuple2<Query,DocumentRanking> t :finalResults) {
-			System.out.println(t._1().getOriginalQuery());
-			for(RankedResult r:t._2().getResults()) {
-				System.out.println(r.getArticle().getTitle()+" "+r.getScore());
-			}
-		}
-		return null; // replace this with the the list of DocumentRanking output by your topology
+//		List<Tuple2<Query, DocumentRanking>> finalResults = output.collectAsList(); 
+//		List<DocumentRanking> out = new ArrayList<>();
+//		for(Tuple2<Query,DocumentRanking> t :finalResults) {
+//			System.out.println(t._1().getOriginalQuery());
+////			for(RankedResult r:t._2().getResults()) {
+////				System.out.println(r.getArticle().getTitle()+" "+r.getScore());
+////			}
+//			out.add(t._2());
+//		}
+		return check; // replace this with the the list of DocumentRanking output by your topology
 	}
 
 }

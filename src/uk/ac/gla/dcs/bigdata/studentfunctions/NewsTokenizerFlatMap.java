@@ -47,7 +47,7 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
         		}
         	}
         	List<String> docTerms = tokenize.process(firstFivePara); // Tokenize Docterms
-        	docTerms.addAll(tokenizedTitle);
+//        	docTerms.addAll(tokenizedTitle);
         	
             HashMap<String, Integer> frequency = new HashMap<>();
 
@@ -60,7 +60,7 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
             totalDocLength.add(docTerms.size());
             List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(1);
             
-            docTermFreq.add(new TokenizedNewsArticle(tokenizedTitle,docTerms.size(),frequency_object,news));
+            docTermFreq.add(new TokenizedNewsArticle(tokenizedTitle,docTerms.size()+1,frequency_object,news));
             return docTermFreq.iterator();
 
         	
