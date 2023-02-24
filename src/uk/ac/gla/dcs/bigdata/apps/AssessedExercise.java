@@ -78,7 +78,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -137,13 +137,11 @@ public class AssessedExercise {
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
 		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
 		Dataset<TokenizedNewsArticle> tokenNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
-//		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
 
 
 		long numberOfDocs = tokenNews.count();
 //		// Merge the token frequencies to get sum of term frequencies for the term
 //		// across all documents in a parallel manner
-//		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
 
 		// Create a CorpusSummary object which contains total number of documents,
 		// average document length and total token frequecies
@@ -152,18 +150,7 @@ public class AssessedExercise {
 		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
 				.broadcast(detailsDataset);
 
-		//Document Ranking objects for all the queries
-//		RankedResultAccumulator queryResutsAccumulator = new RankedResultAccumulator();
-//		CollectionAccumulator<DocumentRanking> queryResutsAccumulator = new CollectionAccumulator<DocumentRanking>();
-//		spark.sparkContext().register(queryResutsAccumulator, "test");
-//		
-//		
-//		Dataset<Byte> __ = tokenNews.map(new ScorerMap(broadcastCorpus, queryList, queryResutsAccumulator),Encoders.BYTE());
-//		__.count();
-//		List<DocumentRanking> queryDocScores = queryResutsAccumulator.value();
-////		KeyValueGroupedDataset<Integer, SteamGameStats> gamesByMetaCriticScore = steamGames.groupByKey(keyFunction, Encoders.INT());
-//		
-//		Dataset<DocumentRanking> queryDocumentScores = spark.createDataset(queryDocScores, Encoders.bean(DocumentRanking.class));
+		//Document Ranking objects forryDocScores, Encoders.bean(DocumentRanking.class));
 		List<DocumentRanking> check = new ArrayList<>();
 		for (Query q : queryList) {
 
@@ -174,29 +161,6 @@ public class AssessedExercise {
 		}
 		
 		
-//		KeyValueGroupedDataset<Query, DocumentRanking> resultsByQueries = rankedDocuments.groupByKey(keyFunction, Encoders.bean(Query.class));
-//		
-//		Dataset<Tuple2<Query, DocumentRanking>> output = resultsByQueries.reduceGroups(new DocumentRankingReducer());
-		
-//		Dataset<DocumentRanking> queryDocumentSorted = queryDocumentScores.sort(desc("score"));
-//		getQueryfromRRQ keyFunction = new getQueryfromRRQ();
-//		KeyValueGroupedDataset<Query, RankedResult> querytoDocuments = queryDocumentSorted.groupByKey(keyFunction, Encoders.bean(Query.class));
-//		
-//		GetTop10 gettopresults = new GetTop10();
-//		Encoder<Tuple2<Query,DocumentRanking>> resultEncoder = Encoders.tuple(Encoders.bean(Query.class), Encoders.bean(DocumentRanking.class));
-//		
-//		Dataset<Tuple2<Query,DocumentRanking>> final_result = querytoDocuments.mapGroups(gettopresults, resultEncoder);
-//		List<Tuple2<Query,DocumentRanking>> final_results = final_result.collectAsList();
-//		List<DocumentRanking> output = new ArrayList<>();
-//		List<Tuple2<Query, DocumentRanking>> finalResults = output.collectAsList(); 
-//		List<DocumentRanking> out = new ArrayList<>();
-//		for(Tuple2<Query,DocumentRanking> t :finalResults) {
-//			System.out.println(t._1().getOriginalQuery());
-////			for(RankedResult r:t._2().getResults()) {
-////				System.out.println(r.getArticle().getTitle()+" "+r.getScore());
-////			}
-//			out.add(t._2());
-//		}
 		return check; // replace this with the the list of DocumentRanking output by your topology
 	}
 
