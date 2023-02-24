@@ -125,43 +125,42 @@ public class AssessedExercise {
 																											// each row
 																											// into a
 																											// NewsArticle
-		
+//		Get list of all queries and create a blank hash map
 		List<Query> queryList = queries.collectAsList();
-		Map<String, Integer> queryTerms = new HashMap<>();
+		Map<String, Integer> corpusFrequency = new HashMap<>();
 		for (Query q : queryList) {
 			for(String t: q.getQueryTerms()) {
-				queryTerms.put(t, 0);
+				corpusFrequency.put(t, 0);
 			}
 		}
 		
+//		Return tokenized news articles using flatmap
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
-		Dataset<TokenizedNewsArticle> tokenNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
+		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(corpusFrequency,totalDocLength);
+		Dataset<TokenizedNewsArticle> tokenizedNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
 
 
-		long numberOfDocs = tokenNews.count();
-//		// Merge the token frequencies to get sum of term frequencies for the term
-//		// across all documents in a parallel manner
-
-		// Create a CorpusSummary object which contains total number of documents,
-		// average document length and total token frequecies
-		CorpusSummary detailsDataset = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, new TokenFrequency(queryTerms));
+		long numberOfDocs = tokenizedNews.count();
+//		Create a corpus summary structure
+		CorpusSummary corpusSummary = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, new TokenFrequency(corpusFrequency));
 
 		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
-				.broadcast(detailsDataset);
+				.broadcast(corpusSummary);
 
 		//Document Ranking objects forryDocScores, Encoders.bean(DocumentRanking.class));
-		List<DocumentRanking> check = new ArrayList<>();
+		
+//		Get Final rankings using a reducer
+		List<DocumentRanking> finalRankings = new ArrayList<>();
 		for (Query q : queryList) {
 
-			Dataset<DocumentRanking> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(DocumentRanking.class));
+			Dataset<DocumentRanking> rankedDocuments = tokenizedNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(DocumentRanking.class));
 			
 			DocumentRanking output = rankedDocuments.reduce(new DocumentRankingReducer());
-			check.add(output);
+			finalRankings.add(output);
 		}
 		
 		
-		return check; // replace this with the the list of DocumentRanking output by your topology
+		return finalRankings; // replace this with the the list of DocumentRanking output by your topology
 	}
 
 }
