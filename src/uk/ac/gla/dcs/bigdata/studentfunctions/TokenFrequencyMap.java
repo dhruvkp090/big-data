@@ -5,7 +5,7 @@ import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**
- * Map function that extracts the token frequency pairs of a document
+ * This Map function extracts the token frequency pairs of a document
  * 
  * @param value Object of type TokenizedNewsArticle
  * return TokenFrequency object
