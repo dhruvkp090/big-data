@@ -11,6 +11,17 @@ import uk.ac.gla.dcs.bigdata.providedutilities.TextPreProcessor;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
+
+/**
+ * Flatmap which filters the documents without title or content and 
+ * calculate the term frequecies of the documents for terms in the queries
+ * 
+ * @param news NewsArticle 	object
+ * @param queryTerms 		terms present in the queries
+ * @param totalDocLength 	Accumulator which calculates the total document length
+ * @return docTermFreq 		TokenizedNewsArticle object 
+ */
+
 public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, TokenizedNewsArticle> {
 	
 	
@@ -25,11 +36,13 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
 	
 	@Override
 	public Iterator<TokenizedNewsArticle> call(NewsArticle news) throws Exception {
+		/* Checking if either the title or content is null */
 		if (news.getTitle()!= null && news.getContents()!=null) {
 			TextPreProcessor tokenize = new TextPreProcessor();
+			/* Tokenize the title */
         	List<String> tokenizedTitle = tokenize.process(news.getTitle());
 
-        	/* Doc Term Frequency */
+        	/* Merge paragraphs and get only the first five paragraphs if there are more*/
         	List<ContentItem> contents = news.getContents();
         	int count = 0;
         	String firstFivePara = "";
@@ -42,26 +55,31 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
                 break;
         		}
         	}
-        	List<String> docTerms = tokenize.process(firstFivePara); // Tokenize Docterms
-//        	docTerms.addAll(tokenizedTitle);
-        	
+        	/* Tokenize the paragraphs */
+        	List<String> docTerms = tokenize.process(firstFivePara); 
+
+
             HashMap<String, Integer> frequency = new HashMap<>();
 
-            // For each term in the queries list gets the number of times term appear in the document
+            /* For each term in the queries gets the number of times term appear in the document*/
             for (String token : queryTerms.keySet()) {
             	int occurrences = Collections.frequency(docTerms, token);
             	frequency.put(token, occurrences);
 				queryTerms.put(token, queryTerms.get(token) + occurrences);
             }
+            /* Creates the TokenFrequency object*/
             TokenFrequency frequency_object = new TokenFrequency(frequency);
-            totalDocLength.add(docTerms.size());
-            List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(1);
             
+            /* Adds the document length to the accumulator*/
+            totalDocLength.add(docTerms.size());
+            
+            List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(1);
             docTermFreq.add(new TokenizedNewsArticle(tokenizedTitle,docTerms.size()+1,frequency_object,news));
             return docTermFreq.iterator();
 
         	
 		}else {
+			/* Returning an empty list if either the title or content is null */
             List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(0);
             return docTermFreq.iterator();
 		}
