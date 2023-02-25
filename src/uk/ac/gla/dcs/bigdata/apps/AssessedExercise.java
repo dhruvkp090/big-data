@@ -99,7 +99,17 @@ public class AssessedExercise {
 		}
 
 	}
-
+	/**
+	 * This function loads Json objects containing queries and news articles.
+	 * It loops over the queries and adds its terms into a corpus object as a hashmap key.
+	 * A TokenizedNewsArticle object is created from every entry in the news article json.
+	 * Frequencies of all the terms in queries are 
+	 * 
+	 * @param spark		Spark session
+	 * @param queryFile A file containing a list of queries
+	 * @param newsFile	A Json file that contains a collection of News Articles
+	 * @return 			List of DocumentRankings of the most relevant documents per query
+	 */
 	public static List<DocumentRanking> rankDocuments(SparkSession spark, String queryFile, String newsFile) {
 
 		// Load queries and news articles
