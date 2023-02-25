@@ -13,6 +13,10 @@ import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
 /**
  * This merges two hashmaps of token frequency pairs, this is processed recursively for the whole dataset
  * to get sum of term frequencies for the term across all documents
+ * 
+ * @param tf1	TokenFrequency from one of the documents (or merged from multiple if at more than 1st level of recursion)
+ * @param tf2	TokenFrequency from one of the documents (or merged from multiple if at more than 1st level of recursion)
+ * @return 		merged TokenFrequency
  */
 
 public class TokenFrequencyReducer implements ReduceFunction<TokenFrequency> {
