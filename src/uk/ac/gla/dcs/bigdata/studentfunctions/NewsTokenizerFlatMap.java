@@ -26,10 +26,10 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
 	
 	
 	private static final long serialVersionUID = 1L;
-	private Map<String, Integer> queryTerms;
+	private List<String> queryTerms;
 	private LongAccumulator totalDocLength;
 	
-	public NewsTokenizerFlatMap(Map<String, Integer> queryTerms,LongAccumulator totalDocLength) {
+	public NewsTokenizerFlatMap(List<String> queryTerms,LongAccumulator totalDocLength) {
 		this.queryTerms = queryTerms;	
 		this.totalDocLength = totalDocLength;
 	}
@@ -62,10 +62,9 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
             HashMap<String, Integer> frequency = new HashMap<>();
 
             /* For each term in the queries gets the number of times term appear in the document*/
-            for (String token : queryTerms.keySet()) {
+            for (String token : queryTerms) {
             	int occurrences = Collections.frequency(docTerms, token);
             	frequency.put(token, occurrences);
-				queryTerms.put(token, queryTerms.get(token) + occurrences);
             }
             /* Creates the TokenFrequency object*/
             TokenFrequency frequency_object = new TokenFrequency(frequency);

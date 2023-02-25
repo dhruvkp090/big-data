@@ -70,7 +70,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -129,22 +129,24 @@ public class AssessedExercise {
 																											// NewsArticle
 //		Get list of all queries and create a blank hash map
 		List<Query> queryList = queries.collectAsList();
-		Map<String, Integer> corpusFrequency = new HashMap<>();
+		List<String> queryTerms = new ArrayList<>();
 		for (Query q : queryList) {
-			for(String t: q.getQueryTerms()) {
-				corpusFrequency.put(t, 0);
-			}
+			queryTerms.addAll(q.getQueryTerms());
 		}
 		
 //		Return tokenized news articles using flatmap
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(corpusFrequency,totalDocLength);
+		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
 		Dataset<TokenizedNewsArticle> tokenizedNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
+		
+		Dataset<TokenFrequency> tokenFrequencies = tokenizedNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
+		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
+		
 
 
 		long numberOfDocs = tokenizedNews.count();
 //		Create a corpus summary structure
-		CorpusSummary corpusSummary = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, new TokenFrequency(corpusFrequency));
+		CorpusSummary corpusSummary = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, allTokenFrequencies);
 
 		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
 				.broadcast(corpusSummary);
