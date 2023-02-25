@@ -2,13 +2,19 @@ package uk.ac.gla.dcs.bigdata.studentstructures;
 
 import java.io.Serializable;
 
-//This is the class representing the information about the corpus
+/**
+ * Represents the information about the Corpus
+ * 
+ * @param totalDocuments        the number of documents in the corpus
+ * @param averageDocumentLength the average document length
+ * @param queryTermsFrequency   TokenFrequency object for the entire corpus
+ */
+
 public class CorpusSummary implements Serializable {
 	private static final long serialVersionUID = 1L;
-	long totalDocuments; // the total number of documents in the corpus
-	float averageDocumentLength; // the average length of the corpus
-	TokenFrequency queryTermsFrequency; // the sum of term frequencies for the set of all the terms in queries across
-										// all documents
+	long totalDocuments; 
+	float averageDocumentLength; 
+	TokenFrequency queryTermsFrequency; 
 
 	public CorpusSummary(long totalDocuments, float averageDocumentLength, TokenFrequency queryTermsFrequency) {
 		this.totalDocuments = totalDocuments;

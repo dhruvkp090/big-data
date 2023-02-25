@@ -4,7 +4,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-//This is the class representing the token frequency pairs
+/**
+ * Represents a map object of tokens and their frequenicies
+ * 
+ * @param frequency  the map of tokens and frequencies
+ */
+
 public class TokenFrequency implements Serializable{
 	private static final long serialVersionUID = 27L;
 	Map<String, Integer> frequency;
