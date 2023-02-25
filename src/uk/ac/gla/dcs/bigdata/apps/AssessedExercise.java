@@ -11,26 +11,26 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.LongAccumulator;
 
 import uk.ac.gla.dcs.bigdata.providedfunctions.NewsFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedfunctions.QueryFormaterMap;
 import uk.ac.gla.dcs.bigdata.providedstructures.DocumentRanking;
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 import uk.ac.gla.dcs.bigdata.providedstructures.Query;
-import uk.ac.gla.dcs.bigdata.providedstructures.RankedResult;
-import uk.ac.gla.dcs.bigdata.providedutilities.TextDistanceCalculator;
 import uk.ac.gla.dcs.bigdata.studentfunctions.*;
 import uk.ac.gla.dcs.bigdata.studentstructures.CorpusSummary;
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenFrequency;
+<<<<<<< src/uk/ac/gla/dcs/bigdata/apps/AssessedExercise.java
+=======
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.DocumentLengthReducer;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsArticleFilter;
 import uk.ac.gla.dcs.bigdata.studentfunctions.NewsTokenizerMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyMap;
 import uk.ac.gla.dcs.bigdata.studentfunctions.TokenFrequencyReducer;
+>>>>>>> src/uk/ac/gla/dcs/bigdata/apps/AssessedExercise.java
 import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
-
-import static org.apache.spark.sql.functions.desc;
 
 /**
  * This is the main class where your Spark topology should be specified.
@@ -79,7 +79,7 @@ public class AssessedExercise {
 		// Get the location of the input news articles
 		String newsFile = System.getenv("bigdata.news");
 		if (newsFile == null)
-			newsFile = "data/TREC_Washington_Post_collection.v3.example.json"; // default is a sample of 5000 news
+			newsFile = "data/TREC_Washington_Post_collection.v2.jl.fix.json"; // default is a sample of 5000 news
 																				// articles
 
 		// Call the student's code
@@ -108,7 +108,21 @@ public class AssessedExercise {
 		}
 
 	}
-
+	/**
+	 * This function loads Json objects containing queries and news articles.
+	 * It loops over the queries and adds its terms into a corpus object as a hashmap key.
+	 * A TokenizedNewsArticle object is created from every entry in the news article json.
+	 * Frequencies of all the terms in queries are then mapped and reduced to get the overall
+	 * allTokenFrequencies hashmap. All corpus statistics are then broadcasted to the scorerMap
+	 * inside a loop over queries. Inside this loop we also perform the reduction over DocumentRankings 
+	 * gathered from scorerMap. The result of this reduction is then the final sorted DocumantRanking of size 10
+	 * without similar articles that is added to the finalRankings list.
+	 * 
+	 * @param spark		Spark session
+	 * @param queryFile A file containing a list of queries
+	 * @param newsFile	A Json file that contains a collection of News Articles
+	 * @return 			List of DocumentRankings of the most relevant documents per query
+	 */
 	public static List<DocumentRanking> rankDocuments(SparkSession spark, String queryFile, String newsFile) {
 
 		// Load queries and news articles
@@ -122,68 +136,51 @@ public class AssessedExercise {
 																										// a Query
 
 		Dataset<NewsArticle> news = newsjson.map(new NewsFormaterMap(), Encoders.bean(NewsArticle.class)); // this
-																											// converts
+																										// converts
 																											// each row
 																											// into a
 																											// NewsArticle
-
-		// 2 filters are applied here, 1. filters out all news articles without title,
-		// 2. calls custom filter function.
-		Dataset<NewsArticle> filteredNews = news.filter(news.col("title").isNotNull())
-				.filter(new NewsArticleFilter());
-
-		// System.out.println(news.count());
-		// System.out.println(filteredNews.count());
-		// filteredNews.printSchema();
-
-		// ----------------------------------------------------------------
-		// Your Spark Topology should be defined here
-		// ----------------------------------------------------------------
-
-		Dataset<TokenizedNewsArticle> tokenNews = filteredNews.map(new NewsTokenizerMap(spark),
-				Encoders.bean(TokenizedNewsArticle.class));
-		//
-		// List<TokenizedNewsArticle> tokenNewsAll = tokenNews.collectAsList();
-		// for(TokenizedNewsArticle c: tokenNewsAll) {
-		// System.out.println(c.getFrequency());
-		// }
-
-		// Extract the lengths of the documents by performing a map from
-		// TokenizedNewsArticle to an integer (the length)
-		Dataset<Integer> documentLengths = tokenNews.map(new DocumentLengthMap(), Encoders.INT());
-		// Sum the documents' lengths in a parallel manner
-		// This will trigger processing up to this point
-		Integer DocLengthSum = documentLengths.reduce(new DocumentLengthReducer());
-		// Calculate the number of documents to calculate the average
-		int DocCount = (int) tokenNews.count();
-		// Calculate the average
-		float AvgDocLength = DocLengthSum / DocCount;
-
-		// Extract the token frequencies of the documents by performing a map from
-		// TokenizedNewsArticle to a TokenFrequency object
-		Dataset<TokenFrequency> tokenFrequencies = tokenNews.map(new TokenFrequencyMap(),
-				Encoders.bean(TokenFrequency.class));
-		// Merge the token frequencies to get sum of term frequencies for the term
-		// across all documents in a parallel manner
-		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
-
-		// Create a CorpusSummary object which contains total number of documents,
-		// average document length and total token frequecies
-		CorpusSummary detailsDataset = new CorpusSummary(DocCount, AvgDocLength, allTokenFrequencies);
-
-		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
-				.broadcast(detailsDataset);
-		
-		//Document Ranking objects for all the queries
-		List<DocumentRanking> rankedQueries = new ArrayList<>();
-
+//		Get list of all queries and create a blank hash map
 		List<Query> queryList = queries.collectAsList();
+		List<String> queryTerms = new ArrayList<>();
 		for (Query q : queryList) {
-			Dataset<RankedResult> rankedDocuments = tokenNews.map(new ScorerMap(broadcastCorpus, q),
-					Encoders.bean(RankedResult.class));
-			rankedQueries.add(new DocumentRanking(q, rankedDocuments.collectAsList())); //Document ranking keeps only 10 reults, need to alter this
+			queryTerms.addAll(q.getQueryTerms());
 		}
 		
+//		Return tokenized news articles using flatmap
+		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
+		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
+		Dataset<TokenizedNewsArticle> tokenizedNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
+		
+//		map and reduce to get the overall term frequency across the whole corpus
+		Dataset<TokenFrequency> tokenFrequencies = tokenizedNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
+		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
+		
+
+//		get number of documents in the corpus
+		long numberOfDocs = tokenizedNews.count();
+//		Create a corpus summary structure
+		CorpusSummary corpusSummary = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, allTokenFrequencies);
+
+		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
+				.broadcast(corpusSummary);
+
+		//Document Ranking objects forryDocScores, Encoders.bean(DocumentRanking.class));
+		
+//		Get Final rankings using a reducer
+		List<DocumentRanking> finalRankings = new ArrayList<>();
+		for (Query q : queryList) {
+//			create DocumentRanking for all tokenizedNewsArticles
+			Dataset<DocumentRanking> rankedDocuments = tokenizedNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(DocumentRanking.class));
+//			reduce the Rankings into the final one
+			DocumentRanking output = rankedDocuments.reduce(new DocumentRankingReducer());
+			finalRankings.add(output);
+		}
+		
+<<<<<<< src/uk/ac/gla/dcs/bigdata/apps/AssessedExercise.java
+		
+		return finalRankings;
+=======
 		// Redundancy filtered and Sorted Document Ranking objects for all the queries
 		List<DocumentRanking> rankedfilteredQueries = new ArrayList<>();
 		 // Iterate over all the queries
@@ -245,6 +242,7 @@ public class AssessedExercise {
 		}
 
 		return rankedfilteredQueries; // replace this with the the list of DocumentRanking output by your topology
+>>>>>>> src/uk/ac/gla/dcs/bigdata/apps/AssessedExercise.java
 	}
 
 }

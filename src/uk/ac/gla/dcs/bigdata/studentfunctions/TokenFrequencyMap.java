@@ -6,6 +6,9 @@ import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 /**
  * Map function that extracts the token frequency pairs of a document
+ * 
+ * @param value Object of type TokenizedNewsArticle
+ * return TokenFrequency object
  */
 
 public class TokenFrequencyMap implements MapFunction<TokenizedNewsArticle, TokenFrequency> {

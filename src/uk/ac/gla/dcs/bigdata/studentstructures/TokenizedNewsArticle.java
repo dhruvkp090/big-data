@@ -2,6 +2,15 @@ package uk.ac.gla.dcs.bigdata.studentstructures;
 
 import java.util.List;
 
+/**
+ * Represents more information about the NewsArticle object
+ * 
+ * @param  tokenizedTitle  the tokens of the title
+ * @param  length 		   the document length
+ * @param  frequency   	   the token frequencies of the document for tokens in the queries
+ * @param  article         the NewsArticle object
+ */
+
 import uk.ac.gla.dcs.bigdata.providedstructures.NewsArticle;
 
 public class TokenizedNewsArticle {

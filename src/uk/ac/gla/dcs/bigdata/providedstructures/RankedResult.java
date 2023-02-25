@@ -11,7 +11,7 @@ public class RankedResult implements Serializable, Comparable<RankedResult> {
 	String docid;
 	NewsArticle article;
 	double score;
-	
+
 	public RankedResult() {}
 	
 	public RankedResult(String docid, NewsArticle article, double score) {
