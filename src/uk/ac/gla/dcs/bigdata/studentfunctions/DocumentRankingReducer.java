@@ -13,7 +13,7 @@ import uk.ac.gla.dcs.bigdata.providedutilities.TextDistanceCalculator;
  * For every pair of DocumentRankings, assume that these are sorted and
  * take the biggest element of dr2 and compare with the smallest element of dr1
  * if true, it checks whether the element from dr2 is similar to any of the elements in dr1, if true(i.e. not similar)
- * then the biggest element of dr2 replaces the smallest element of dr1 in dr1 and dr2 is sorted.
+ * then the biggest element of dr2 replaces the smallest element of dr1 in dr1 and dr1 is sorted.
  * Then we move on to compare the currently smallest element of dr1 with the currently biggest element of dr2.
  * 
  * @param dr1  Object of type DocumentRanking

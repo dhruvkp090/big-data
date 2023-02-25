@@ -143,11 +143,12 @@ public class AssessedExercise {
 		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
 		Dataset<TokenizedNewsArticle> tokenizedNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
 		
+//		map and reduce to get the overall term frequency across the whole corpus
 		Dataset<TokenFrequency> tokenFrequencies = tokenizedNews.map(new TokenFrequencyMap(),Encoders.bean(TokenFrequency.class));
 		TokenFrequency allTokenFrequencies = tokenFrequencies.reduce(new TokenFrequencyReducer());
 		
 
-
+//		get number of documents in the corpus
 		long numberOfDocs = tokenizedNews.count();
 //		Create a corpus summary structure
 		CorpusSummary corpusSummary = new CorpusSummary(numberOfDocs, totalDocLength.value() / numberOfDocs, allTokenFrequencies);
@@ -160,15 +161,15 @@ public class AssessedExercise {
 //		Get Final rankings using a reducer
 		List<DocumentRanking> finalRankings = new ArrayList<>();
 		for (Query q : queryList) {
-
+//			create DocumentRanking for all tokenizedNewsArticles
 			Dataset<DocumentRanking> rankedDocuments = tokenizedNews.map(new ScorerMap(broadcastCorpus, q), Encoders.bean(DocumentRanking.class));
-			
+//			reduce the Rankings into the final one
 			DocumentRanking output = rankedDocuments.reduce(new DocumentRankingReducer());
 			finalRankings.add(output);
 		}
 		
 		
-		return finalRankings; // replace this with the the list of DocumentRanking output by your topology
+		return finalRankings;
 	}
 
 }
