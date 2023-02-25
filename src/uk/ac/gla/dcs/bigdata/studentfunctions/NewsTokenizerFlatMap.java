@@ -13,8 +13,8 @@ import uk.ac.gla.dcs.bigdata.studentstructures.TokenizedNewsArticle;
 
 
 /**
- * Flatmap which filters the documents without title or content and 
- * calculate the term frequecies of the documents for terms in the queries
+ * This FlatMapFunction filters the documents without title or content and 
+ * calculate the term frequencies of the documents for terms in the queries
  * 
  * @param news NewsArticle 	object
  * @param queryTerms 		terms present in the queries
