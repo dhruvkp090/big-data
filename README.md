@@ -30,7 +30,7 @@ TokenFrequencyReducer
 This ReduceFunction merges two hashmaps of token frequency pairs, this is processed recursively for the whole dataset to get sum 
 of term frequencies for the term across all documents
 
-![Graph](/images/graph.png "graph")
+![Graph](/images/graph.jpg "graph")
 
 
 
