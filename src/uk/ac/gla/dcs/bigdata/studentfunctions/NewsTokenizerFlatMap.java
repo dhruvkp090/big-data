@@ -58,6 +58,7 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
         	}
         	/* Tokenize the paragraphs */
         	List<String> docTerms = tokenize.process(firstFivePara); 
+        	docTerms.addAll(tokenizedTitle);
 
 
             HashMap<String, Integer> frequency = new HashMap<>();
