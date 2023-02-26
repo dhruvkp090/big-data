@@ -40,6 +40,13 @@ public class DocumentRankingReducer implements ReduceFunction<DocumentRanking> {
 					}
 					
 					Collections.sort(dr1_results, Collections.reverseOrder());
+				}else {
+//					if the one that is not similar is smaller than the one we are considering
+					int index = replaceIndex(dr2_results.get(j),dr1_results);
+					if (index != -1) {
+						dr1_results.set(index,dr2_results.get(j));
+					}
+					
 				}
 				
 			}
@@ -63,5 +70,22 @@ public class DocumentRankingReducer implements ReduceFunction<DocumentRanking> {
 			}
 		}
 		return false;
+	}
+	
+	private static int replaceIndex(RankedResult current, List<RankedResult>all) {
+		int index = -1;
+		for(int i=0; i<all.size(); i++) {
+			if(TextDistanceCalculator.similarity(current.getArticle().getTitle(),all.get(i).getArticle().getTitle())<0.5){
+				if(current.getScore() > all.get(i).getScore()) {
+					if (index == 0) {
+						index = i;
+					}else {
+						return -1;
+					}
+					
+				}
+			}
+		}
+		return index;
 	}
 }
