@@ -3,6 +3,7 @@ package uk.ac.gla.dcs.bigdata.studentfunctions;
 import java.util.*;
 
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.util.LongAccumulator;
 
 import uk.ac.gla.dcs.bigdata.providedstructures.ContentItem;
@@ -26,10 +27,10 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
 	
 	
 	private static final long serialVersionUID = 1L;
-	private List<String> queryTerms;
+	private Broadcast<List<String>> queryTerms;
 	private LongAccumulator totalDocLength;
 	
-	public NewsTokenizerFlatMap(List<String> queryTerms,LongAccumulator totalDocLength) {
+	public NewsTokenizerFlatMap(Broadcast<List<String>> queryTerms,LongAccumulator totalDocLength) {
 		this.queryTerms = queryTerms;	
 		this.totalDocLength = totalDocLength;
 	}
@@ -62,7 +63,7 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
             HashMap<String, Integer> frequency = new HashMap<>();
 
             /* For each term in the queries gets the number of times term appear in the document*/
-            for (String token : queryTerms) {
+            for (String token : queryTerms.getValue()) {
             	int occurrences = Collections.frequency(docTerms, token);
             	frequency.put(token, occurrences);
             }

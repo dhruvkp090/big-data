@@ -139,10 +139,10 @@ public class AssessedExercise {
 		for (Query q : queryList) {
 			queryTerms.addAll(q.getQueryTerms());
 		}
-		
+		Broadcast<List<String>> broadcastQueryTerms = JavaSparkContext.fromSparkContext(spark.sparkContext()).broadcast(queryTerms);
 //		Return tokenized news articles using flatmap
 		LongAccumulator totalDocLength = spark.sparkContext().longAccumulator();
-		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(queryTerms,totalDocLength);
+		NewsTokenizerFlatMap newsFlatMapper = new NewsTokenizerFlatMap(broadcastQueryTerms,totalDocLength);
 		Dataset<TokenizedNewsArticle> tokenizedNews = news.flatMap(newsFlatMapper, Encoders.bean(TokenizedNewsArticle.class));
 		
 //		map and reduce to get the overall term frequency across the whole corpus
@@ -157,8 +157,6 @@ public class AssessedExercise {
 
 		Broadcast<CorpusSummary> broadcastCorpus = JavaSparkContext.fromSparkContext(spark.sparkContext())
 				.broadcast(corpusSummary);
-
-		//Document Ranking objects forryDocScores, Encoders.bean(DocumentRanking.class));
 		
 //		Get Final rankings using a reducer
 		List<DocumentRanking> finalRankings = new ArrayList<>();

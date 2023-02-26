@@ -30,7 +30,7 @@ public class ScorerMap implements MapFunction<TokenizedNewsArticle, DocumentRank
 	private static final long serialVersionUID = 1L;
 	private Broadcast<CorpusSummary> corpus;
 	private Query query;
-
+	
 	public ScorerMap(Broadcast<CorpusSummary> corpus, Query query) {
 		this.corpus = corpus;
 		this.query = query;
