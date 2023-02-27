@@ -31,7 +31,8 @@ public class DocumentRankingReducer implements ReduceFunction<DocumentRanking> {
 		int lastIndex =  dr1_results.size()-1;
 		for(int j=0; j<dr2_results.size();j++) {
 			if (dr2_results.get(j).getScore()> dr1_results.get(lastIndex).getScore()) {
-				if (!CheckSimilarity(dr2_results.get(j),dr1_results)) {
+				int index = checkSimilarity(dr2_results.get(j),dr1_results);
+				if (index == -2) {
 					if (dr1_results.size() >= 10) {
 						dr1_results.set(lastIndex,dr2_results.get(j));
 						
@@ -41,12 +42,10 @@ public class DocumentRankingReducer implements ReduceFunction<DocumentRanking> {
 					
 					Collections.sort(dr1_results, Collections.reverseOrder());
 				}else {
-//					if the one that is not similar is smaller than the one we are considering
-					int index = replaceIndex(dr2_results.get(j),dr1_results);
+					
 					if (index != -1) {
 						dr1_results.set(index,dr2_results.get(j));
 					}
-					
 				}
 				
 			}
@@ -58,26 +57,19 @@ public class DocumentRankingReducer implements ReduceFunction<DocumentRanking> {
 	/**
 	 * Helper function that checks whether object of type RankedResult is similar to any of the objects
 	 * in list of RankedResult objects. Objects are being compared according to the title of the Article they contain.
+	 * If current is similar to one object in the all list then compare if the one object in the list has smaller score
+	 * if yes then replace it, if it is similar to more than 1 in the list it is disregarded.
 	 * 
 	 * @param current Element of type RankedResult
 	 * @param all 	  List of RankedResult elements
-	 * @return		  True if similar, false if not similar
-	 */
-	private static boolean CheckSimilarity(RankedResult current, List<RankedResult>all) {
-		for(RankedResult r:all) {
-			if (TextDistanceCalculator.similarity(r.getArticle().getTitle() , current.getArticle().getTitle())<0.5){
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private static int replaceIndex(RankedResult current, List<RankedResult>all) {
-		int index = -1;
+	 * @return		  -2 if not similar, -1 if similar to more than 1, otherwise index of the one it is similar to and bigger than
+	 */	
+	private static int checkSimilarity(RankedResult current, List<RankedResult>all) {
+		int index = -2;
 		for(int i=0; i<all.size(); i++) {
 			if(TextDistanceCalculator.similarity(current.getArticle().getTitle(),all.get(i).getArticle().getTitle())<0.5){
 				if(current.getScore() > all.get(i).getScore()) {
-					if (index == 0) {
+					if (index == -2) {
 						index = i;
 					}else {
 						return -1;
@@ -88,4 +80,5 @@ public class DocumentRankingReducer implements ReduceFunction<DocumentRanking> {
 		}
 		return index;
 	}
+
 }
