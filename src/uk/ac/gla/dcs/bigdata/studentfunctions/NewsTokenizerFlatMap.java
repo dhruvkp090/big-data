@@ -59,25 +59,29 @@ public class NewsTokenizerFlatMap implements FlatMapFunction<NewsArticle, Tokeni
         	/* Tokenize the paragraphs */
         	List<String> docTerms = tokenize.process(firstFivePara); 
         	docTerms.addAll(tokenizedTitle);
-
-
-            HashMap<String, Integer> frequency = new HashMap<>();
-
-            /* For each term in the queries gets the number of times term appear in the document*/
-            for (String token : queryTerms.getValue()) {
-            	int occurrences = Collections.frequency(docTerms, token);
-            	frequency.put(token, occurrences);
-            }
-            /* Creates the TokenFrequency object*/
-            TokenFrequency frequency_object = new TokenFrequency(frequency);
-            
-            /* Adds the document length to the accumulator*/
-            totalDocLength.add(docTerms.size());
-            
-            List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(1);
-            docTermFreq.add(new TokenizedNewsArticle(tokenizedTitle,docTerms.size()+1,frequency_object,news));
-            return docTermFreq.iterator();
-
+        	
+        	if(docTerms.size()>0) {
+        
+	            HashMap<String, Integer> frequency = new HashMap<>();
+	
+	            /* For each term in the queries gets the number of times term appear in the document*/
+	            for (String token : queryTerms.getValue()) {
+	            	int occurrences = Collections.frequency(docTerms, token);
+	            	frequency.put(token, occurrences);
+	            }
+	            /* Creates the TokenFrequency object*/
+	            TokenFrequency frequency_object = new TokenFrequency(frequency);
+	            
+	            /* Adds the document length to the accumulator*/
+	            totalDocLength.add(docTerms.size());
+	            
+	            List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(1);
+	            docTermFreq.add(new TokenizedNewsArticle(tokenizedTitle,docTerms.size(),frequency_object,news));
+	            return docTermFreq.iterator();
+        	}else {
+        		List<TokenizedNewsArticle> docTermFreq = new ArrayList<>(0);
+                return docTermFreq.iterator();	
+        	}
         	
 		}else {
 			/* Returning an empty list if either the title or content is null */
